@@ -10,11 +10,11 @@
 set -euo pipefail
 
 NB="${1:-ML4HL-Tutorial.ipynb}"
-IMAGE="${COLAB_IMAGE:-us-docker.pkg.dev/colab-images/public/runtime:latest}"
 OUT="${2:-.cache/colab-pinned}"
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+IMAGE="${COLAB_IMAGE:-$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["official_colab_image"])' "$SCRIPT_DIR/../ml4hl/assets/runtime.json")}"
 PKGS='numpy|pandas|scipy|scikit-learn|scikit-image|matplotlib|matplotlib-inline|seaborn|huggingface-hub|hf-xet|fsspec|pyarrow|ipython|ipykernel|jupyter_client|nbformat|nbconvert|joblib|threadpoolctl|networkx|h5py|pillow|requests|tqdm|torch|torchvision'
 
 WORK="$(mktemp -d)"

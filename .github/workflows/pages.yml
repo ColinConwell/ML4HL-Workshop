@@ -63,9 +63,28 @@ jobs:
         with:
           python-version: '3.12'
       - name: Prepare Ephemeral Runner Disk
+        if: ${{ env.ACT != 'true' }}
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          # These paths contain preinstalled SDKs on this disposable hosted runner only.
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /usr/local/lib/powershell /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk /opt/hostedtoolcache/go /opt/hostedtoolcache/Ruby /opt/hostedtoolcache/PyPy
+          ML4HL_KEEP_PYTHON=$(python -c 'import sys; print(sys.base_prefix)')
+          sudo env ML4HL_KEEP_PYTHON="$ML4HL_KEEP_PYTHON" python3 - <<'PYTHON'
+          import os, shutil
+          from pathlib import Path
+          keep = Path(os.environ['ML4HL_KEEP_PYTHON'])
+          root = Path('/opt/hostedtoolcache')
+          for folder in root.iterdir():
+              if folder not in keep.parents:
+                  if folder.is_dir(): shutil.rmtree(folder)
+                  else: folder.unlink()
+          for folder in (root/'Python').iterdir():
+              if folder not in keep.parents:
+                  if folder.is_dir(): shutil.rmtree(folder)
+                  else: folder.unlink()
+          PYTHON
+          sudo docker image prune --all --force
           df -h /
+          python -c "import shutil; free=shutil.disk_usage('/').free/2**30; print(f'Free space: {free:.1f} GiB'); assert free >= 50, 'Official Colab image needs at least 50 GiB free for extraction'"
       - name: Install Pinned Colab-Test
         run: python -m pip install nbformat 'git+https://github.com/ColinConwell/Colab-Test.git@ee5bcec8280c4e6261ccb03b15ee18a9a79aaaa0'
       - name: Official Runtime Execution With Notebook Setup
@@ -90,6 +109,7 @@ jobs:
           name: site
           path: _site
       - name: Publish to gh-pages
+        if: ${{ env.ACT != 'true' }}
         uses: peaceiris/actions-gh-pages@329bcc8f12caed2cefe5a5b80781499a6f3b361b # v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
