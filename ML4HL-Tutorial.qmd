@@ -132,7 +132,7 @@ Regression predicts a continuous quantity from one or more measurements: a house
 
 ## Fit a Line by Eye
 
-Drag the two round handles (or grab the line itself) until the fit looks right. Each orange square shows a **residual** — the vertical miss for one observation — drawn as a literal square proportional to the residual in screen coordinates. The meter in the corner sums the areas of all those squares.
+Drag the two round handles (or grab the line itself) until the fit looks right. Each residual square shows a **residual** — the vertical miss for one observation — drawn as a literal square proportional to the residual in screen coordinates. The meter in the corner sums the areas of all those squares.
 
 ```{python}
 #| label: w-ols-fit
@@ -192,7 +192,7 @@ If you have ever heard of a **Rectified Linear Unit (ReLU)** in deep learning, y
 - **Spline regression** places the knots $\kappa_j$ at fixed positions (equally spaced or at quantiles of $x$) and solves for the output weights $v_j$ in one step by least squares.
 - **A neural network** treats the knot positions $\kappa_j$ as learnable weights too, using gradient descent to slide the hinges into the sharpest bends of the data — and then stacks multiple layers of hinges so the kinks can fold high-dimensional spaces.
 
-Try both below: drag the orange knot pins along the horizontal axis by hand, or press **optimize knots (GD)** to watch gradient descent migrate the hinges toward the steepest bends.
+Try both below: drag the knot pins along the horizontal axis by hand, or press **optimize knots (GD)** to watch gradient descent migrate the hinges toward the steepest bends.
 
 ```{python}
 #| label: w-spline-relu-basis
@@ -445,7 +445,7 @@ A classifier is a boundary in feature space. The geometry of the category manifo
 
 ## Logistic Regression: A Boundary with Probability Estimates
 
-**Logistic regression** fits a linear boundary by passing the weighted sum of features through a logistic sigmoid, outputting a continuous probability between $0$ and $1$. Points deep inside blue territory receive probabilities near $0$ or $1$ depending on the class; points along the boundary receive $0.50$. Training minimizes **cross-entropy** (log loss), which penalizes high-confidence errors heavily.
+**Logistic regression** fits a linear boundary by passing the weighted sum of features through a logistic sigmoid, outputting a continuous probability between $0$ and $1$. Points far from the boundary receive probabilities near $0$ or $1$ depending on the class; points along the boundary receive $0.50$. Training minimizes **cross-entropy** (log loss), which penalizes high-confidence errors heavily.
 
 ```{python}
 #| label: w-logistic-gd
@@ -465,7 +465,7 @@ In 1958 Frank Rosenblatt introduced the **perceptron**, a single artificial neur
 show("perceptron")
 ```
 
-The left panel displays the network weights (green for excitatory, red for inhibitory, line width proportional to magnitude); the right panel displays the corresponding linear boundary in the input plane. Whenever the perceptron misclassifies a point, its update rule changes the weights in a direction that reduces that misclassification. Press play on the **separable** preset to watch the boundary converge, then switch to **XOR** to see why a single linear unit cycles indefinitely — a limitation that vanishes as soon as hidden layers of hinges are stacked (see the `mlp_xor` alternative in the optional local widget gallery and Part 2).
+The left panel displays the network weights (separate colors distinguish positive and negative weights; line width indicates magnitude); the right panel displays the corresponding linear boundary in the input plane. Whenever the perceptron misclassifies a point, its update rule changes the weights in a direction that reduces that misclassification. Press play on the **separable** preset to watch the boundary converge, then switch to **XOR** to see why a single linear unit cycles indefinitely — a limitation that vanishes as soon as hidden layers of hinges are stacked (see the `mlp_xor` alternative in the optional local widget gallery and Part 2).
 
 ## One Dataset, Five Classifiers
 
@@ -872,7 +872,7 @@ An **autoencoder** is a neural network trained to reconstruct its own input $x$ 
 show("autoencoder")
 ```
 
-Each synthetic image in Figure 12 is a 2D Gaussian spot that varies in horizontal position, vertical position, and radius. Press **train**: the reconstructions in the bottom row rapidly converge toward the inputs, and the 2D latent scatter on the right organizes smoothly by horizontal position (color). Drag the orange latent-code sliders to decode new synthetic images directly from the bottleneck coordinates. Reducing the bottleneck width to $1$ restricts reconstruction to a single curve, while widening it to $16$ lowers reconstruction error at the expense of a less compact code.
+Each synthetic image in Figure 12 is a 2D Gaussian spot that varies in horizontal position, vertical position, and radius. Press **train**: the reconstructions in the bottom row rapidly converge toward the inputs, and the 2D latent scatter on the right organizes smoothly by horizontal position (color). Drag the latent-code sliders to decode new synthetic images directly from the bottleneck coordinates. Reducing the bottleneck width to $1$ restricts reconstruction to a single curve, while widening it to $16$ lowers reconstruction error at the expense of a less compact code.
 
 Because the target output is the input itself ($y = x$), an autoencoder is a canonical example of **self-supervised learning**. Below, we run the same architecture on $8 \times 8$ handwritten digit images:
 
@@ -893,7 +893,7 @@ A linear **projection** reduces dimensionality by taking the dot product of each
 show("projection")
 ```
 
-Drag the orange axis in Figure 13 to rotate the projection direction. Each point projects onto its orthogonal shadow along the line, and the right-hand curve plots the fraction of total variance retained at every angle. For centered data, the direction that maximizes retained variance (and equivalently minimizes the sum of squared perpendicular reconstruction errors) is the **first principal component** (PC1). Subsequent principal components maximize variance subject to being mutually orthogonal. That orthogonal variance-maximizing basis defines **principal component analysis** (PCA).
+Drag the projection axis in Figure 13 to rotate the projection direction. Each point projects onto its orthogonal shadow along the line, and the right-hand curve plots the fraction of total variance retained at every angle. For centered data, the direction that maximizes retained variance (and equivalently minimizes the sum of squared perpendicular reconstruction errors) is the **first principal component** (PC1). Subsequent principal components maximize variance subject to being mutually orthogonal. That orthogonal variance-maximizing basis defines **principal component analysis** (PCA).
 
 Switch to the **random projection** tab. The Johnson–Lindenstrauss lemma gives probabilistic distance-preservation guarantees for a finite set of points when the target dimension is sufficiently large relative to the logarithm of the number of points and the desired error tolerance. Random projection directions need not be orthogonal. The widget illustrates empirical distance correlation; this is weaker than checking the theorem’s bound for every pair.
 
@@ -1175,7 +1175,7 @@ Random observation-level folds estimate performance on new observations drawn un
 show("cv_folds")
 ```
 
-In Figure 16, each column represents one observation colored by its group (e.g., participant or household), and each row represents one cross-validation fold (the legend identifies train and test). In the scatter panel, red segments connect each test point to its nearest training neighbor whenever both belong to the same group. Under standard `kfold` or `stratified` splitting, groupmates appear in both train and test sets simultaneously, allowing a nearest-neighbor classifier to match group-specific offsets and substantially overestimate out-of-sample accuracy (solid orange line vs. dashed green out-of-group baseline).
+In Figure 16, each column represents one observation colored by its group (e.g., participant or household), and each row represents one cross-validation fold (the legend identifies train and test). In the scatter panel, segments connect each test point to its nearest training neighbor whenever both belong to the same group. Under standard `kfold` or `stratified` splitting, groupmates appear in both train and test sets simultaneously, allowing a nearest-neighbor classifier to match group-specific offsets and substantially overestimate out-of-sample accuracy (solid accuracy line versus the dashed out-of-group baseline).
 
 Switch the scheme to **group** (`GroupKFold`): every group is assigned intact to a single fold, the within-group red links vanish, and the estimate targets unseen-group performance under the simulated sampling process. Its uncertainty and applicability still depend on the sampled groups.
 

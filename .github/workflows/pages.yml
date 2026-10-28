@@ -67,6 +67,7 @@ jobs:
         run: |
           # These paths contain preinstalled SDKs on this disposable hosted runner only.
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /usr/local/lib/powershell /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk /opt/hostedtoolcache/go /opt/hostedtoolcache/Ruby /opt/hostedtoolcache/PyPy
+          sudo rm -rf /usr/share/miniconda /usr/local/share/vcpkg /home/linuxbrew /home/runner/.rustup /home/runner/.cargo /opt/az /opt/microsoft /usr/local/share/powershell /usr/lib/jvm
           ML4HL_KEEP_PYTHON=$(python -c 'import sys; print(sys.base_prefix)')
           sudo env ML4HL_KEEP_PYTHON="$ML4HL_KEEP_PYTHON" python3 - <<'PYTHON'
           import os, shutil
@@ -83,6 +84,7 @@ jobs:
                   else: folder.unlink()
           PYTHON
           sudo docker image prune --all --force
+          sudo du -xhd1 /usr/local /usr/share /opt /home/runner 2>/dev/null | sort -h
           df -h /
           python -c "import shutil; free=shutil.disk_usage('/').free/2**30; print(f'Free space: {free:.1f} GiB'); assert free >= 50, 'Official Colab image needs at least 50 GiB free for extraction'"
       - name: Install Pinned Colab-Test
