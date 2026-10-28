@@ -133,7 +133,9 @@ def build(src: Path, asset_ref: str = "main") -> nbformat.NotebookNode:
     meta, body = front_matter(src.read_text())
     header = [
         '<div style="display:flow-root;">',
-        f'<img src="https://raw.githubusercontent.com/ColinConwell/ML4HL-Workshop/{escape(asset_ref, quote=True)}/assets/visna-logo.jpg" '
+        # Colab strips inline CSS; the SVG preserves rounded corners, while align
+        # keeps the logo floated beside the title even after sanitization.
+        f'<img src="https://raw.githubusercontent.com/ColinConwell/ML4HL-Workshop/{escape(asset_ref, quote=True)}/assets/visna-logo-rounded.svg" '
         'alt="VISNA Lab" width="125" height="125" align="left" '
         'style="float:left;border-radius:26px;margin:0 24px 16px 0;object-fit:contain;">',
         f'<h1 style="margin:0 0 12px;padding:0;">{escape(meta.get("title", src.stem))}</h1>',

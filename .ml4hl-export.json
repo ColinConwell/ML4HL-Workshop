@@ -8,11 +8,12 @@
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "LICENSE-HELPER": "2eb2f59652242306d6f0ae93632559d386d6cbec4e4089f8f6285a14ee4773f7",
     "ML4HL-Tutorial.html": "5343e5aa96701417fab1f361be234fc26749f6bfdf00b5b662f11214da470d24",
-    "ML4HL-Tutorial.ipynb": "70cfef00a48585705c277117dfbb7c4c52abb27dbaaeea49f8c11de4f05706e8",
+    "ML4HL-Tutorial.ipynb": "27e6b10266ebd1d8b5df79ff5b77b150e5f67f071825701a34ab2495f6b2cac9",
     "ML4HL-Tutorial.qmd": "a7a1e8a20e2cfea01da6f5b59268e71b838b4fd054408e9356f68ab7a905b490",
     "README.md": "5afaf5a0a3d3ef760a4cd99b796c8acfe8b14e63062891770c0d784bcc8d9f29",
-    "assets/README.md": "adf3b4bc4cef6939986462dac7b731ddf8055ccb3ccf7ec2529746e2d463a4d5",
+    "assets/README.md": "806e48cbe70b4d8d53d41b393509e743feab851d111aefc4775171c7cc213bc1",
     "assets/theme-head.html": "f625f51eaae7d1e849ca539c69b69c44040de3ec9332964d8cf9e0a6719c7c40",
+    "assets/visna-logo-rounded.svg": "43abf88e2502704da39f05ced8cb19b627a2c2eab4a1d4f07f6dfa36cc06bab5",
     "assets/visna-logo.jpg": "08e9bdeb3aa72607874f93e3de3711a1e117490d8ab4af5eff54b92d60a3b9f1",
     "ml4hl/__init__.py": "b991667a7402c43f051f263c88521435febf95de3d97a3540ab1bd909527f48e",
     "ml4hl/assets/core.js": "e826fd7b5c6a51cabbc06954ef6a630b896eeb11e695c7c6bd0dd879ed1f5297",
@@ -67,7 +68,7 @@
     "scripts/colab_pinned.sh": "9a80bbd6ce5e3915cc899a022fc67efbc0cf59076173e6694caa777fd65edc85",
     "scripts/execute_notebook.py": "d902acff0ca42f57020f7bcfa8c1c642b4bf5280e26594481cb46f95151fc2ad",
     "scripts/notebook_bundle.py": "9481fc4a438de28460a3df0431d8fba3a44ec08e81e9f6a2ee0ae9ac12a099b8",
-    "scripts/to_colab.py": "67c43e21d0a8922bc587c383bac2cc44e4b912c772ee6aa19335ed7a1791d35b",
+    "scripts/to_colab.py": "100376773499828425ab7bc00953fc60611f3029198348ca30db0684de95ec5a",
     "scripts/validate_site.py": "92b4000eb6001750b25974cc4ab854e4e1c4ed1a90572dec7b6d1972505b2640",
     "styles.css": "bb0c6c4dc5ff6fd2b01123074a3639ce970421e7e771f434accbb670d9eefee3"
   }
