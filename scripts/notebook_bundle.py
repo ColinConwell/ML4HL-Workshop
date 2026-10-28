@@ -20,6 +20,8 @@ def bundled_helper_setup(root):
 # Reviewed ml4hl source; bundled by scripts/to_colab.py. SHA-256: {checksum}
 import base64, hashlib, io, tempfile, zipfile, os
 os.environ["ML4HL_STANDALONE"] = "1"
+for _thread_variable in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ[_thread_variable] = os.environ.get("ML4HL_THREADS", "2")
 _helper_zip = base64.b64decode({base64.b64encode(payload).decode()!r})
 assert hashlib.sha256(_helper_zip).hexdigest() == {checksum!r}
 _helper_dir = tempfile.mkdtemp(prefix="ml4hl-helper-")

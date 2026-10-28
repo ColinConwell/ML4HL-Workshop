@@ -10,6 +10,7 @@ downloaded from their original hosts and cached under ``~/.cache/ml4hl``.
 from __future__ import annotations
 
 import io
+import hashlib
 import json
 import os
 import zipfile
@@ -35,14 +36,21 @@ def _local_dirs(artifacts=None) -> list[Path]:
     return dirs
 
 
+def _verified_artifact(path: Path, name: str) -> Path:
+    expected = _RELEASE.get("files", {}).get(name)
+    if expected and hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        raise ValueError(f"Artifact checksum differs from the pinned release: {name}")
+    return path
+
+
 def artifact(name: str, artifacts=None) -> Path:
     """Path to an artifact file: local copy if present, else downloaded from the Hub."""
     for d in _local_dirs(artifacts):
         if (d / name).exists():
-            return d / name
+            return _verified_artifact(d / name, name)
     from huggingface_hub import hf_hub_download
 
-    return Path(hf_hub_download(HF_REPO, f"artifacts/{name}", repo_type="dataset", revision=HF_REVISION))
+    return _verified_artifact(Path(hf_hub_download(HF_REPO, f"artifacts/{name}", repo_type="dataset", revision=HF_REVISION)), name)
 
 
 def artifact_manifest(artifacts=None) -> dict:
@@ -66,12 +74,14 @@ def _try_artifact(name: str, artifacts=None) -> Path | None:
     """Return local or Hub artifact path if available, else None."""
     for d in _local_dirs(artifacts):
         if (d / name).exists():
-            return d / name
+            return _verified_artifact(d / name, name)
     from huggingface_hub import hf_hub_download
     from huggingface_hub.errors import EntryNotFoundError
     try:
-        return Path(hf_hub_download(HF_REPO, f"artifacts/{name}", repo_type="dataset", revision=HF_REVISION))
+        return _verified_artifact(Path(hf_hub_download(HF_REPO, f"artifacts/{name}", repo_type="dataset", revision=HF_REVISION)), name)
     except EntryNotFoundError:
+        if name in _RELEASE.get("files", {}):
+            raise  # A pinned required artifact must never silently switch to raw-data parsing.
         return None  # Only an absent optional artifact permits its documented raw-data fallback.
 
 

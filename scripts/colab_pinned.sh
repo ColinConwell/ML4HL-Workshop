@@ -30,7 +30,7 @@ grep -iE '^(scikit-learn|pandas|ipython)==' "$WORK/pins.txt" | tr '\n' ' '; echo
 
 echo "Executing $NB in python:3.12-slim (arm64) with those pins..."
 cp "$WORK/pins.txt" "$OUT/pins.txt"
-docker run --rm --platform linux/arm64 -e JOBLIB_MULTIPROCESSING=0 -e OPENBLAS_NUM_THREADS=2 -e OMP_NUM_THREADS=2 -e ML4HL_RUNTIME_IMAGE="native-arm64-with-pins-from-$IMAGE" -w /nb -v "$WORK:/nb:rw" -v "$OUT:/results:rw" python:3.12-slim bash -c '
+docker run --rm --platform linux/arm64 -e JOBLIB_MULTIPROCESSING=0 -e ML4HL_RUNTIME_IMAGE="native-arm64-with-pins-from-$IMAGE" -w /nb -v "$WORK:/nb:rw" -v "$OUT:/results:rw" python:3.12-slim bash -c '
 apt-get update -qq >/dev/null && apt-get install -y -qq gcc g++ >/dev/null 2>&1
 pip install -q uv >/dev/null 2>&1
 uv pip install --system -q -r pins.txt \

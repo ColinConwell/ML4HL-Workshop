@@ -1,4 +1,23 @@
 {
   "repo": "colinconwell/ml4hl",
-  "revision": "d66521fd9f28c4d290b510d816b32ba24dacfd32"
+  "revision": "a1360a0d33a7ebb77f0f14da5339cd7488e2969b",
+  "files": {
+    "dollar_street_emb.npy": "b51f86f6c190b151cb532339b5e7164179d0c6f72d4d4c27a377a5c266edbfb5",
+    "dollar_street_meta.parquet": "4aa4e467b0050aba22d00b851aef5ce20a251c3e7a6c1e29beea1fa318081414",
+    "dollar_street_thumbs.npy": "2ece4327aa61c876e63631c2c7579c7b687025aadf5dceb0debc2f3dcbb1c383",
+    "finch_feats.npy": "b6dedd8fb9f2571da295c6ac87ca840fd939672dbfe36b52198699a551c60dd0",
+    "finch_feature_names.json": "b772eec2f94406982666975529f450b1bcc9577747798520f5b33dfffbf08f0d",
+    "finch_meta.parquet": "8708b2309c344fafab64ca05916d8a8603058673c260d7b0f9244af4121864bc",
+    "finch_specs.npy": "affc1eadedc70dccfb945751d74bf41be6493d66a13f968d84965d03ab1ea3f7",
+    "household_survey.parquet": "10d912b48bd1125f95dab4f6f5e26cf85fb7b4d2d744856060aa48d7e6a25380",
+    "manifest.json": "7665cd51ac08872c92e363653314f3299079abc89caf01c4c586cf608e4a7c0b",
+    "music_emotions.parquet": "9b120b064fefa8daada577c21596e7562b4ac633633609072ea99d47e3d3fe5f",
+    "musiclab_ids.parquet": "1f1b3270302237259f53b6f286661c383448200777964e82759d6373cfcde52c",
+    "musiclab_nhs.parquet": "7065cdb32726484ec38aaa271f33b8fcc0ecb94e15f3fa8b719860fc90b6b979",
+    "perinatal_dev.parquet": "a75d3d928999f92aa155040cf4af4e384b2dd3da82c7c9c41332fa8cd7b75530",
+    "things_meta.parquet": "7e9e16e7b9b6b6ff498dab9fe3206fbacc2afb6eebe6c8af5681f9fb70b59a74",
+    "things_model_emb.npy": "4e2478a1bb35d5730cb20f267f913470085a5cc98d726bc948a8ae983d130113",
+    "things_spose.npy": "84e3c61ba2b3f41857f15b3cb7b01681af01201ef046d5895c71c08c239dc2bd",
+    "wordbank_cdi.parquet": "9762584489a8c74e7ac22891d71c04315b3a8919bb520efa76479667a5ec48b8"
+  }
 }

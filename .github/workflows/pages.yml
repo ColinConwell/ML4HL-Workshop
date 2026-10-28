@@ -41,6 +41,7 @@ jobs:
         run: |
           python scripts/build_theme.py
           python scripts/to_colab.py --asset-ref "${{ github.sha }}"
+          python scripts/check_data_release.py
           python scripts/check_science.py
           quarto render ML4HL-Tutorial.qmd --no-execute-daemon
           python scripts/check_outputs.py

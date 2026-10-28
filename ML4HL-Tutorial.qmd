@@ -61,6 +61,9 @@ Machine learning methods use observations to fit models, discover structure, and
 import sys
 import os
 N_JOBS = int(os.environ.get("ML4HL_N_JOBS", "2"))
+N_THREADS = int(os.environ.get("ML4HL_THREADS", "2"))
+for _thread_variable in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ[_thread_variable] = str(N_THREADS)
 
 import ml4hl  # Installed locally, or bundled by the generated Colab setup.
 
@@ -70,6 +73,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from threadpoolctl import threadpool_limits
+
+# Bound native-library threads too; n_jobs controls a separate layer of parallelism.
+_thread_limit = threadpool_limits(limits=N_THREADS)
 
 ml4hl.reset_assets()
 ml4hl.set_style()
