@@ -63,7 +63,11 @@ h4 {
 .quarto-title-block .subtitle {
   color: var(--hl-ink);
 }
+.quarto-title-banner .quarto-title {
+  border-top: 1px solid var(--hl-rule);
+}
 .quarto-title-block .title {
+  border-top: 0;
   font-size: clamp(2.1rem, 4.4vw, 3.4rem);
   font-weight: 600;
   line-height: 1.08;

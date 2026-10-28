@@ -1,8 +1,6 @@
 ---
 title: "Machine Learning for Human Learners"
 subtitle: "Intro: Key Concepts + Core Methods"
-author: "Colin Conwell"
-date: last-modified
 format:
   html:
     theme:

@@ -7,10 +7,10 @@
     "JUSTFile": "3b0ca987f5c9ae5fc4eeee4296872f308d07b77f082a518f65fe45c4ee9526c0",
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "LICENSE-HELPER": "2eb2f59652242306d6f0ae93632559d386d6cbec4e4089f8f6285a14ee4773f7",
-    "ML4HL-Tutorial.html": "44ca2beeaa6450753e5e70fd9af0ab9765fd3f2cf00f9fa24435ae1aa8e3ca88",
-    "ML4HL-Tutorial.ipynb": "713971a5d7381f3ab0c551fa6ac6f1088d25bd20ed43cfc9d189894a0d172e0f",
-    "ML4HL-Tutorial.qmd": "1ae7c10f39a89ed8d94cfac1ed3d41a6568349328def77b4fefcac660e305a8f",
-    "README.md": "92948a1d976a67addc33f0e3b5e9b6f77bdc7cf649365afd79709614642c849c",
+    "ML4HL-Tutorial.html": "5343e5aa96701417fab1f361be234fc26749f6bfdf00b5b662f11214da470d24",
+    "ML4HL-Tutorial.ipynb": "70cfef00a48585705c277117dfbb7c4c52abb27dbaaeea49f8c11de4f05706e8",
+    "ML4HL-Tutorial.qmd": "a7a1e8a20e2cfea01da6f5b59268e71b838b4fd054408e9356f68ab7a905b490",
+    "README.md": "5afaf5a0a3d3ef760a4cd99b796c8acfe8b14e63062891770c0d784bcc8d9f29",
     "assets/README.md": "adf3b4bc4cef6939986462dac7b731ddf8055ccb3ccf7ec2529746e2d463a4d5",
     "assets/theme-head.html": "f625f51eaae7d1e849ca539c69b69c44040de3ec9332964d8cf9e0a6719c7c40",
     "assets/visna-logo.jpg": "08e9bdeb3aa72607874f93e3de3711a1e117490d8ab4af5eff54b92d60a3b9f1",
@@ -67,8 +67,8 @@
     "scripts/colab_pinned.sh": "9a80bbd6ce5e3915cc899a022fc67efbc0cf59076173e6694caa777fd65edc85",
     "scripts/execute_notebook.py": "d902acff0ca42f57020f7bcfa8c1c642b4bf5280e26594481cb46f95151fc2ad",
     "scripts/notebook_bundle.py": "9481fc4a438de28460a3df0431d8fba3a44ec08e81e9f6a2ee0ae9ac12a099b8",
-    "scripts/to_colab.py": "bf0ba01a43166b00fd657ab0779760c31e620564975e57e65f2db8dc7603f8f2",
+    "scripts/to_colab.py": "67c43e21d0a8922bc587c383bac2cc44e4b912c772ee6aa19335ed7a1791d35b",
     "scripts/validate_site.py": "92b4000eb6001750b25974cc4ab854e4e1c4ed1a90572dec7b6d1972505b2640",
-    "styles.css": "1aa2e9c11f923a1358989091cc6c76139f2717d24f7e1be50b211b6c689b711d"
+    "styles.css": "bb0c6c4dc5ff6fd2b01123074a3639ce970421e7e771f434accbb670d9eefee3"
   }
 }

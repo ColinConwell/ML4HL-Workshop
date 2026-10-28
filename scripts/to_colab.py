@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from html import escape
 import re
 from pathlib import Path
 
@@ -26,7 +27,7 @@ GH_TREE = "https://colinconwell.com/Tutorials/tutorials"
 COLAB_URL = "https://colab.research.google.com/github/ColinConwell/ML4HL-Workshop/blob/main/ML4HL-Tutorial.ipynb"
 COLAB_PACKAGES = ["rsatoolbox", "medmnist", "huggingface_hub", "pyarrow", "seaborn"]
 
-SETUP = f'''# @title Install the packages Colab doesn't ship (about 20 s, first run only)
+SETUP = f'''# @title In Colab? Click Play
 import importlib.util, subprocess, sys
 
 missing = [p for p in {COLAB_PACKAGES!r} if importlib.util.find_spec(p) is None]
@@ -130,10 +131,17 @@ def convert_code(src: str) -> tuple[str, dict]:
 
 def build(src: Path, asset_ref: str = "main") -> nbformat.NotebookNode:
     meta, body = front_matter(src.read_text())
-    header = [f'<img src="https://raw.githubusercontent.com/ColinConwell/ML4HL-Workshop/{asset_ref}/assets/visna-logo.jpg" alt="VISNA Lab" width="140">', f"# {meta.get('title', src.stem)}"]
+    header = [
+        '<div style="display:flow-root;">',
+        f'<img src="https://raw.githubusercontent.com/ColinConwell/ML4HL-Workshop/{escape(asset_ref, quote=True)}/assets/visna-logo.jpg" '
+        'alt="VISNA Lab" width="125" height="125" align="left" '
+        'style="float:left;border-radius:26px;margin:0 24px 16px 0;object-fit:contain;">',
+        f'<h1 style="margin:0 0 12px;padding:0;">{escape(meta.get("title", src.stem))}</h1>',
+    ]
     if meta.get("subtitle"):
-        header.append(f"*{meta['subtitle']}*")
-    header.append(f"{meta.get('author', '')}\n\n[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]({COLAB_URL})")
+        header.append(f'<p style="margin:0;">{escape(meta["subtitle"])}</p>')
+    header.extend(['<br clear="all">', '</div>'])
+    header = ['\n'.join(header), f'[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]({COLAB_URL})']
     cells = [new_markdown_cell("\n\n".join(header)), new_code_cell(SETUP + bundled_helper_setup(ROOT), metadata={"cellView": "form"})]
     for kind, text in split_cells(body):
         if kind == "code":
