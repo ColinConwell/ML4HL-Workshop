@@ -4,7 +4,7 @@
 ML4HL.register('error_landscape', function (root, cfg) {
   var M = ML4HL, C = M.C;
   M.frame(root, cfg, {
-    title: 'Learning is rolling downhill',
+    title: 'Landscapes of loss (and gain)',
     hint: 'Drag the ball &middot; press play &middot; change the step size'
   });
 
@@ -54,9 +54,20 @@ ML4HL.register('error_landscape', function (root, cfg) {
   function curv(x) { var e = 1e-3; return (land(x + e) - 2 * land(x) + land(x - e)) / (e * e); }
 
   /* ─── State ─── */
+  var hidden = !!cfg.hide_unvisited, explored = new Uint8Array(N + 1);
+  var REVEAL_MARGIN = 0.025;
+  function reveal(a, b) {
+    var lo = Math.max(0, Math.floor((Math.min(a, b) - REVEAL_MARGIN) * N));
+    var hi = Math.min(N, Math.ceil((Math.max(a, b) + REVEAL_MARGIN) * N));
+    for (var i = lo; i <= hi; i++) explored[i] = 1;
+  }
+  function exploredFraction() { return explored.reduce(function (a, b) { return a + b; }, 0) / explored.length; }
+  var lastShown;
   var ball, from, to, tween, steps, history, trail, status, snapped, dragging = false;
-  function resetBall(x) {
+  function resetBall(x, clearExploration) {
+    if (clearExploration) explored.fill(0);
     ball = from = to = M.clamp(x, 0, 1);
+    lastShown = ball; reveal(ball, ball);
     tween = 1; steps = 0; history = [land(ball)]; trail = []; status = 'ready'; snapped = false;
   }
 
@@ -100,9 +111,14 @@ ML4HL.register('error_landscape', function (root, cfg) {
   });
   var row2 = M.row(root);
   M.button(row2, 'drop ball', function () { pause(); resetBall(M.rng(Date.now() & 0xffff).uniform(0.03, 0.97)); draw(); }, { aria: 'Drop the ball somewhere random' });
-  M.button(row2, 'new landscape', function () { pause(); seed++; build(); resetBall(START); draw(); });
+  M.button(row2, 'new landscape', function () { pause(); seed++; build(); resetBall(START, true); draw(); });
+  var fogBtn = M.button(row2, 'hide unvisited landscape', function () {
+    hidden = !hidden; fogBtn.setAttribute('aria-pressed', String(hidden));
+    fogBtn.classList.toggle('on', hidden); draw();
+  }, { aria: 'Hide unvisited landscape' });
+  fogBtn.setAttribute('aria-pressed', String(hidden)); fogBtn.classList.toggle('on', hidden);
   M.spacer(row2);
-  M.resetButton(row2, function () { pause(); resetBall(START); draw(); });
+  M.resetButton(row2, function () { pause(); resetBall(START, true); draw(); });
   var read = M.readout(root);
 
   var tweenLoop = M.loop(function (dt) {
@@ -143,9 +159,27 @@ ML4HL.register('error_landscape', function (root, cfg) {
     M.clear(ctx, s);
     M.axes(ctx, v, s, { xlabels: false, ylabels: false, xlabel: 'weight (a knob the model can turn)', ylabel: 'error' });
 
+    var currentX = shownX();
+    reveal(lastShown, currentX); lastShown = currentX;
+    root.dataset.exploredFraction = exploredFraction().toFixed(4);
+    root.dataset.hiddenLandscape = String(hidden);
+
     /* Landscape: filled area plus outline. */
     ctx.save();
     v.clip(ctx);
+    if (hidden) {
+      // Reveal continuous swept paths, retaining earlier visits even when the trail fades.
+      ctx.beginPath();
+      for (var bin = 0; bin <= N; bin++) {
+        if (!explored[bin]) continue;
+        var first = bin;
+        while (bin < N && explored[bin + 1]) bin++;
+        var leftEdge = v.px(Math.max(0, (first - 0.5) / N));
+        var rightEdge = v.px(Math.min(1, (bin + 0.5) / N));
+        ctx.rect(leftEdge, v.T, rightEdge - leftEdge, v.B - v.T);
+      }
+      ctx.clip();
+    }
     var grad = ctx.createLinearGradient(0, v.T, 0, v.B);
     grad.addColorStop(0, 'rgba(37,99,235,0.02)');
     grad.addColorStop(1, 'rgba(37,99,235,0.13)');
@@ -164,6 +198,7 @@ ML4HL.register('error_landscape', function (root, cfg) {
     ctx.font = M.font(s, 9.5, 500);
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     minima.forEach(function (m, k) {
+      if (hidden) return; // A visited valley cannot establish the global optimum.
       var px = v.px(m.x), py = v.py(m.y);
       if (k === globalIdx) {
         M.star(ctx, px, py + 13 * s.sc, 7 * s.sc, C.gold, '#fff');
@@ -176,6 +211,11 @@ ML4HL.register('error_landscape', function (root, cfg) {
       }
     });
 
+    if (hidden) {
+      ctx.font = M.font(s, 9, 500); ctx.fillStyle = C.muted;
+      ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+      ctx.fillText('UNCHARTED AREAS ARE HIDDEN', v.R - 5 * s.sc, v.B - 6 * s.sc);
+    }
     /* Trail of previous positions. */
     trail.forEach(function (x, k) {
       var a = 0.12 + 0.5 * (k / trail.length);
@@ -201,7 +241,7 @@ ML4HL.register('error_landscape', function (root, cfg) {
     }
 
     /* The ball. */
-    var col = status === 'local' ? C.orange : status === 'global' ? C.gold : status === 'wild' || status === 'bouncing' ? C.red : C.blue;
+    var col = status === 'local' ? C.orange : status === 'global' ? (hidden ? C.orange : C.gold) : status === 'wild' || status === 'bouncing' ? C.red : C.blue;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.18)'; ctx.shadowBlur = 5 * s.sc; ctx.shadowOffsetY = 1.5 * s.sc;
     M.dot(ctx, px0, py0 - 7.5 * s.sc, 7.5 * s.sc, col, '#fff', 2 * s.sc);
@@ -238,11 +278,12 @@ ML4HL.register('error_landscape', function (root, cfg) {
       local: '<span class="o">stuck in a local minimum</span> <span class="k">&mdash; try a bigger step, or drop the ball elsewhere</span>',
       global: '<span class="g">settled in the global minimum</span>'
     }[status];
+    if (hidden && (status === 'global' || status === 'local')) msg = '<span class="o">settled in a visited valley; deeper uncharted valleys may exist</span>';
     read.innerHTML = '<span class="k">step</span> ' + steps +
       '<span class="sep">&middot;</span><span class="k">error</span> ' + e.toFixed(3) +
       '<span class="sep">&middot;</span><span class="k">slope</span> ' + M.f(g, 2) +
       (snapped ? ' <span class="k">(snapped)</span>' : '') +
-      '<span class="sep">&middot;</span>' + msg;
+      '<span class="sep">&middot;</span>' + msg + (hidden ? '<span class="sep">&middot;</span>' + Math.round(exploredFraction() * 100) + '% of horizontal range explored' : '');
   }
 
   /* ─── Interaction ─── */
@@ -253,9 +294,9 @@ ML4HL.register('error_landscape', function (root, cfg) {
   function placeAt(px) {
     var x = M.clamp(v.ix(px), 0, 1);
     snapped = false;
-    minima.forEach(function (m) { if (Math.abs(m.x - x) < SNAP) { x = m.x; snapped = true; } });
+    minima.forEach(function (m) { if (!hidden && Math.abs(m.x - x) < SNAP) { x = m.x; snapped = true; } });
     resetBall(x);
-    snapped = minima.some(function (m) { return m.x === x; });
+    snapped = !hidden && minima.some(function (m) { return m.x === x; });
   }
   M.pointer(stage.cv, {
     down: function (p) {
@@ -275,11 +316,11 @@ ML4HL.register('error_landscape', function (root, cfg) {
   });
 
   build();
-  resetBall(START);
+  resetBall(START, true);
   stage.draw = draw;
   stage.request();
   return {
     destroy: function () { pause(); tweenLoop.stop(); },
-    state: function () { return { ball: ball, steps: steps, status: status }; }
+    state: function () { return { ball: ball, steps: steps, status: status, hidden: hidden, exploredFraction: exploredFraction() }; }
   };
 });

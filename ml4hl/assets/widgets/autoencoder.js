@@ -109,6 +109,42 @@ ML4HL.register('autoencoder', function (root, cfg) {
   function encodeAll() { codes = X.slice(0, 260).map(encode); }
 
   /* ─── DOM ─── */
+  var architecture = document.createElement('div');
+  architecture.className = 'wae-architecture';
+  root.appendChild(architecture);
+  var architectureK = null, architectureNodes = [];
+  function drawArchitecture() {
+    if (!P) return;
+    var widths = [D, H, K, H, D], names = ['Input', 'Encoder', 'Bottleneck', 'Decoder', 'Rebuilt'];
+    if (architectureK !== K) {
+      architectureK = K;
+      var positions = widths.map(function (n, layer) {
+        var count = Math.min(n, 6);
+        return M.range(count).map(function (i) { return [52 + layer * 124, 76 + (i - (count - 1) / 2) * 18]; });
+      });
+      var svg = '<svg viewBox="0 0 600 180" role="img" aria-label="Autoencoder architecture: ' + D + ' input pixels, ' + H + ' encoder units, ' + K + ' bottleneck numbers, ' + H + ' decoder units, ' + D + ' reconstructed pixels. Representative units are shown; colors indicate current activations.">';
+      positions.forEach(function (pts, layer) {
+        if (layer < 4) pts.forEach(function (a) { positions[layer + 1].forEach(function (b) {
+          svg += '<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" class="wae-edge"/>';
+        }); });
+      });
+      positions.forEach(function (pts, layer) {
+        pts.forEach(function (point, i) { svg += '<circle cx="'+point[0]+'" cy="'+point[1]+'" r="6" data-layer="'+layer+'" data-unit="'+i+'"/>'; });
+        svg += '<text x="'+(52+layer*124)+'" y="148">'+names[layer]+'</text><text x="'+(52+layer*124)+'" y="165">'+widths[layer]+(layer===0 || layer===4 ? ' pixels' : ' numbers')+'</text>';
+      });
+      architecture.innerHTML = svg + '</svg><p>Input → compress → small code → rebuild. Representative units are shown; their colors follow the selected example’s actual activations.</p>';
+      architectureNodes = Array.from(architecture.querySelectorAll('circle'));
+    }
+    var enc = matvec(P.W1, X[sample], P.b1, new Float64Array(H), 'tanh');
+    var dec = matvec(P.W3, code, P.b3, new Float64Array(H), 'tanh');
+    var values = [X[sample], enc, code, dec, decode(code)];
+    architectureNodes.forEach(function (node) {
+      var layer = +node.dataset.layer, unit = +node.dataset.unit;
+      var value = values[layer][unit];
+      node.style.fill = M.rgba(value < 0 ? C.blue : C.orange, 0.2 + 0.8 * Math.min(1, Math.abs(value)));
+      node.style.stroke = C.ink;
+    });
+  }
   var split = M.split(root, 1.25);
   M.mini(split.a, 'originals (top) and rebuilt copies (bottom)');
   M.mini(split.b, 'the code space (first two code numbers)');
@@ -230,7 +266,7 @@ ML4HL.register('autoencoder', function (root, cfg) {
 
   function draw() {
     if (!P) return;
-    drawLeft(); drawRight();
+    drawArchitecture(); drawLeft(); drawRight();
     var err = losses.length ? losses[losses.length - 1] : null;
     var verdict = !losses.length ? '<span class="k">untrained weights: press train to compress and reconstruct</span>'
       : err > 0.03 ? '<span class="o">fitting the coarse spatial structure</span>'

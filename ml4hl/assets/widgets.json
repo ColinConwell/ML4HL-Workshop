@@ -12,15 +12,16 @@
   "widgets": [
     {
       "name": "error_landscape", "fig": 1, "section": "opening",
-      "title": "Learning is rolling downhill",
-      "hint": "Drag the ball &middot; press play &middot; change the step size",
-      "pitch": "An error landscape with local and global minima. Gradient descent steps in the downhill direction proportional to the local slope.",
+      "title": "Landscapes of Loss (and Gain)",
+      "hint": "Drag the ball &middot; press play &middot; hide unvisited landscape",
+      "pitch": "An error landscape with local and global minima. Gradient descent steps in the downhill direction proportional to the local slope. Hide unvisited areas to chart only the path explored by the ball.",
       "animated": true, "modes": ["sim"],
       "params": [
         {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 3, "doc": "Landscape seed"},
         {"key": "lr", "type": "float", "min": 0.001, "max": 0.08, "step": 0.001, "default": 0.006, "doc": "Learning rate (step size)"},
         {"key": "start", "type": "float", "min": 0.02, "max": 0.98, "step": 0.01, "default": 0.03, "doc": "Starting position of the ball"},
-        {"key": "wells", "type": "int", "min": 2, "max": 5, "default": 3, "doc": "Number of valleys"}
+        {"key": "wells", "type": "int", "min": 2, "max": 5, "default": 3, "doc": "Number of valleys"},
+        {"key": "hide_unvisited", "type": "bool", "default": false, "doc": "Reveal only the explored path and a small margin"}
       ]
     },
     {

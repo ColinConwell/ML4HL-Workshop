@@ -291,3 +291,28 @@ code:not(.sourceCode) {
 @media (max-width: 760px) {
   .quarto-title-block .title { font-size: 2.1rem; }
 }
+
+/* Tab choices retain a common shape and wrap at readable widths. */
+.panel-tabset > .nav-tabs {
+  display:flex; flex-wrap:wrap; gap:0.5rem; border:0; margin:1rem 0;
+}
+.panel-tabset > .nav-tabs > .nav-item {flex:1 1 17rem; min-width:0; display:flex;}
+.panel-tabset > .nav-tabs .nav-link {
+  display:flex; align-items:center; width:100%; height:100%; text-align:left;
+  white-space:normal; overflow-wrap:anywhere; line-height:1.45;
+  padding:0.75rem 0.9rem; border:1px solid var(--hl-rule);
+  border-radius:6px; text-transform:none; letter-spacing:0;
+  font-family:inherit; font-size:0.92rem; color:var(--hl-ink);
+  background:var(--hl-paper);
+}
+.panel-tabset > .nav-tabs .nav-link.active {
+  border:1px solid var(--hl-ink); background:var(--hl-panel);
+  box-shadow:inset 0 -3px 0 var(--hl-blue);
+}
+.panel-tabset > .tab-content {padding:0.25rem 0; border:0;}
+main details {margin:0.8rem 0 1.2rem;}
+main details > summary {cursor:pointer; color:var(--hl-blue);}
+/* Wide result tables scroll inside their own region rather than widening the page. */
+main .cell-output-display:has(table), main .quarto-table {max-width:100%;overflow-x:auto;}
+main table {display:block;max-width:100%;overflow-x:auto;}
+main :not(pre) > code {white-space:normal;overflow-wrap:anywhere;}

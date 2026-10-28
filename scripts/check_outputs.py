@@ -15,3 +15,27 @@ nb=nbformat.read(ROOT/'ML4HL-Tutorial.ipynb',4)
 assert sum(c.cell_type=='code' for c in nb.cells)==len(re.findall(r'^```\{python\}',source,re.M))+1
 assert 'base64.b64decode' in nb.cells[1].source and 'ML4HL_STANDALONE' in nb.cells[1].source
 print(f'PASS: {len(labels)} labeled source cells, at least 21 themed figures, logo, and generated notebook setup')
+
+# Publication requirements shared by Quarto and the generated Colab notebook.
+blocks = re.findall(r"```\{python\}\n(.*?)\n```", source, re.S)
+figure_blocks = [block for block in blocks if "plt.subplots(" in block]
+assert all("#| code-fold: true" in block for block in figure_blocks), "Unfolded plotting cell"
+assert all(not re.search(r"\.fit(?:_transform)?\(|cross_val_(?:score|predict)\(", block) for block in figure_blocks), "Model fitting remains in plotting code"
+figure_cells = [cell for cell in nb.cells if cell.cell_type == "code" and "plt.subplots(" in cell.source]
+assert len(figure_cells) == len(figure_blocks)
+assert all(cell.metadata.get("cellView") == "form" for cell in figure_cells), "Colab plot folding lost"
+takeaways = re.findall(r'title="Takeaway #\d+"}\n(.*?)\n:::', source, re.S)
+closing = source.split("## The Ten Takeaways\n")[1].split("## The Whole Toolkit")[0]
+assert len(takeaways) == 10
+assert all(f"{i}. {text}" in closing for i, text in enumerate(takeaways, 1)), "Closing takeaways drifted"
+for content in (source, page, "\n".join(cell.source for cell in nb.cells if cell.cell_type == "markdown")):
+ assert not re.search(r"\bPart (?:2|II)\b|optional local widget gallery", content, re.I), "Retired public reference remains"
+print(f"PASS: {len(figure_blocks)} folded plot cells in HTML source and Colab; separate fitting; ten synchronized takeaways; retired references removed")
+
+stack = []
+for line in source.splitlines():
+ if re.match(r"^:::+\s+\{", line): stack.append(line)
+ elif re.match(r"^:::+\s*$", line):
+  assert stack, "Closing a Markdown container that is not open"
+  stack.pop()
+assert not stack, f"Unclosed Markdown containers: {stack}"

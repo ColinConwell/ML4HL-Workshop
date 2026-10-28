@@ -281,3 +281,11 @@
   font: 12px/1.5 var(--mono);
   color: var(--red);
 }
+
+/* Keep panel titles clear of mode switches, including stacked layouts. */
+.ml4hl .wrow + div:has(> .wsplit), .ml4hl .wrow + .wsplit {margin-top:18px;}
+.ml4hl .wae-architecture {margin:12px 0 20px;}
+.ml4hl .wae-architecture svg {display:block;width:100%;height:auto;background:var(--bg);border:1px solid var(--border);border-radius:4px;}
+.ml4hl .wae-architecture text {fill:var(--fg);font:12px system-ui,sans-serif;text-anchor:middle;}
+.ml4hl .wae-architecture .wae-edge {stroke:var(--muted);stroke-opacity:0.18;stroke-width:1;}
+.ml4hl .wae-architecture p {font:12px/1.5 system-ui,sans-serif;color:var(--muted);margin:8px 0;}

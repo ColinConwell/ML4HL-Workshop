@@ -14,8 +14,8 @@ a {color:var(--ml-blue);}
 .ml4hl-appearance label {display:inline-flex; gap:8px; align-items:center;}
 .ml4hl-appearance select {background:var(--ml-surface);color:var(--ml-ink);border:1px solid var(--ml-border);border-radius:3px;padding:7px;font:inherit;max-width:100%;}
 :focus-visible {outline:2px solid var(--ml-blue);outline-offset:3px;}
-.quarto-title {position:relative; padding-right:155px;}
-.ml4hl-logo {position:absolute;right:0;top:0;width:125px;height:125px;object-fit:contain;background:white;border:1px solid var(--ml-border);border-radius:4px;}
+.quarto-title {position:relative; padding-left:155px; padding-right:0; min-height:125px;}
+.ml4hl-logo {position:absolute;left:0;top:50%;transform:translateY(-50%);width:125px;height:125px;object-fit:contain;background:white;border:1px solid var(--ml-border);border-radius:26px;}
 .quarto-title-block .subtitle,.field-card p,.g-intro,.g-side a.is-alt {color:var(--ml-muted);}
 .quarto-color-scheme-toggle {display:none !important;}
 [data-ml4hl-theme] .ml4hl.widget {--bg:var(--ml-bg);--surface:var(--ml-surface);--fg:var(--ml-ink);--muted:var(--ml-muted);--faint:var(--ml-faint);--border:var(--ml-border);--grid:var(--ml-grid);--code-bg:var(--ml-panel);--blue:var(--ml-blue);--orange:var(--ml-orange);--green:var(--ml-green);--red:var(--ml-red);--sans:system-ui,sans-serif;--mono:ui-monospace,monospace;}
@@ -27,9 +27,15 @@ html[data-ml4hl-plots="original"] .ml4hl-plot img[data-mode] {display:none;}
 html[data-ml4hl-plots="original"] .ml4hl-plot img[data-mode="original"] {display:block;}
 html[data-ml4hl-theme="dark"] .table,html[data-ml4hl-theme="dark"] table {--bs-table-color:var(--ml-ink);--bs-table-bg:var(--ml-surface);color:var(--ml-ink);}
 .seg button.on,.tool.on {color:var(--ml-bg);}
-@media(max-width:600px){.quarto-title{padding-right:0;padding-top:100px}.ml4hl-logo{left:0;width:80px;height:80px}.ml4hl-appearance{padding:12px;}}
+@media(max-width:600px){.quarto-title{padding-left:90px;padding-right:0;min-height:80px}.ml4hl-logo{width:72px;height:72px;border-radius:18px}.ml4hl-appearance{padding:12px;}}
 @media print{.ml4hl-appearance{display:none}.ml4hl-plot img[data-mode]{display:none!important}.ml4hl-plot img[data-mode="light"]{display:block!important}}
 
 html[data-ml4hl-theme] .lead,html[data-ml4hl-theme] .subtitle {font-weight:400;}
 
 html[data-ml4hl-theme] #TOC .nav-link.active {color:var(--ml-blue);border-left-color:var(--ml-blue);}
+
+/* Quarto's late-loaded Bootstrap code rules must use the selected palette too. */
+html[data-ml4hl-theme] body :not(pre) > code {
+  color:var(--ml-ink) !important; background-color:var(--ml-panel) !important;
+  border:1px solid var(--ml-border); border-radius:4px; padding:0.08em 0.28em;
+}

@@ -228,7 +228,7 @@ ML4HL.register('perceptron', function (root, cfg) {
       training: cur && cur.err ? '<span class="o">mistake! the weights get nudged toward the right answer</span>' : '<span class="b">learning&hellip;</span>',
       converged: '<span class="g">a full pass with zero mistakes: the perceptron has converged</span>',
       stuck: '<span class="r">never converges: no single straight line can split ' + (presetT && presetT.get() === 'xor' ? 'XOR' : 'these points') +
-        '. That takes hidden layers (Part 2!)</span>'
+        '. That takes hidden layers of non-linear units</span>'
     }[status];
     read.innerHTML = '<span class="k">pass</span> ' + (epoch + 1) +
       '<span class="sep">&middot;</span><span class="k">points on the wrong side</span> ' + wrongNow + ' / ' + X.length +

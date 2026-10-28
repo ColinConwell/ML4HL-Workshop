@@ -14,8 +14,8 @@ a {color:var(--ml-blue);}
 .ml4hl-appearance label {display:inline-flex; gap:8px; align-items:center;}
 .ml4hl-appearance select {background:var(--ml-surface);color:var(--ml-ink);border:1px solid var(--ml-border);border-radius:3px;padding:7px;font:inherit;max-width:100%;}
 :focus-visible {outline:2px solid var(--ml-blue);outline-offset:3px;}
-.quarto-title {position:relative; padding-right:155px;}
-.ml4hl-logo {position:absolute;right:0;top:0;width:125px;height:125px;object-fit:contain;background:white;border:1px solid var(--ml-border);border-radius:4px;}
+.quarto-title {position:relative; padding-left:155px; padding-right:0; min-height:125px;}
+.ml4hl-logo {position:absolute;left:0;top:50%;transform:translateY(-50%);width:125px;height:125px;object-fit:contain;background:white;border:1px solid var(--ml-border);border-radius:26px;}
 .quarto-title-block .subtitle,.field-card p,.g-intro,.g-side a.is-alt {color:var(--ml-muted);}
 .quarto-color-scheme-toggle {display:none !important;}
 [data-ml4hl-theme] .ml4hl.widget {--bg:var(--ml-bg);--surface:var(--ml-surface);--fg:var(--ml-ink);--muted:var(--ml-muted);--faint:var(--ml-faint);--border:var(--ml-border);--grid:var(--ml-grid);--code-bg:var(--ml-panel);--blue:var(--ml-blue);--orange:var(--ml-orange);--green:var(--ml-green);--red:var(--ml-red);--sans:system-ui,sans-serif;--mono:ui-monospace,monospace;}
@@ -27,12 +27,18 @@ html[data-ml4hl-plots="original"] .ml4hl-plot img[data-mode] {display:none;}
 html[data-ml4hl-plots="original"] .ml4hl-plot img[data-mode="original"] {display:block;}
 html[data-ml4hl-theme="dark"] .table,html[data-ml4hl-theme="dark"] table {--bs-table-color:var(--ml-ink);--bs-table-bg:var(--ml-surface);color:var(--ml-ink);}
 .seg button.on,.tool.on {color:var(--ml-bg);}
-@media(max-width:600px){.quarto-title{padding-right:0;padding-top:100px}.ml4hl-logo{left:0;width:80px;height:80px}.ml4hl-appearance{padding:12px;}}
+@media(max-width:600px){.quarto-title{padding-left:90px;padding-right:0;min-height:80px}.ml4hl-logo{width:72px;height:72px;border-radius:18px}.ml4hl-appearance{padding:12px;}}
 @media print{.ml4hl-appearance{display:none}.ml4hl-plot img[data-mode]{display:none!important}.ml4hl-plot img[data-mode="light"]{display:block!important}}
 
 html[data-ml4hl-theme] .lead,html[data-ml4hl-theme] .subtitle {font-weight:400;}
 
 html[data-ml4hl-theme] #TOC .nav-link.active {color:var(--ml-blue);border-left-color:var(--ml-blue);}
+
+/* Quarto's late-loaded Bootstrap code rules must use the selected palette too. */
+html[data-ml4hl-theme] body :not(pre) > code {
+  color:var(--ml-ink) !important; background-color:var(--ml-panel) !important;
+  border:1px solid var(--ml-border); border-radius:4px; padding:0.08em 0.28em;
+}
 </style><script>window.ML4HL_THEME_CONFIG={"name": "Graphite & Spectrum", "description": "Sans-serif text throughout, with violet, blue, and coral accents drawn from the logo.", "body": "'Avenir Next', Avenir, system-ui, sans-serif", "heading": "'Avenir Next', Avenir, system-ui, sans-serif", "light": {"bg": "#FAFAFC", "surface": "#FFFFFF", "ink": "#292936", "muted": "#626273", "border": "#DCDCE6", "grid": "#E7E7EE", "panel": "#F0EFF5", "blue": "#6554A4", "orange": "#BA5960", "green": "#286FA3", "red": "#AC404E", "purple": "#815891", "faint": "#DCDCE6", "codeBg": "#F0EFF5", "gold": "#976B16", "teal": "#187777", "blueDeep": "#6554A4", "blueSoft": "#F0EFF5", "orangeDeep": "#BA5960", "orangeSoft": "#F0EFF5", "greenSoft": "#F0EFF5", "pink": "#A43D7C", "olive": "#58752D", "cyan": "#247A95", "brown": "#8A5A32", "slate": "#59647A", "lavender": "#776ABB"}, "dark": {"bg": "#17181D", "surface": "#21222B", "ink": "#EEEFF7", "muted": "#B7B8C9", "border": "#454656", "grid": "#373847", "panel": "#2A2B37", "blue": "#B6A5EF", "orange": "#F29BA3", "green": "#83BCE5", "red": "#F08B98", "purple": "#D3ACE4", "faint": "#454656", "codeBg": "#2A2B37", "gold": "#E8C273", "teal": "#7CC7C7", "blueDeep": "#B6A5EF", "blueSoft": "#2A2B37", "orangeDeep": "#F29BA3", "orangeSoft": "#2A2B37", "greenSoft": "#2A2B37", "pink": "#EBA4CF", "olive": "#B5D48C", "cyan": "#8AD2E7", "brown": "#E9B58B", "slate": "#A6AEC4", "lavender": "#C2B9FF"}, "categorical": ["blue", "orange", "green", "red", "purple", "teal", "pink", "olive", "cyan", "brown", "slate", "lavender"]};</script><script>(function () {
   'use strict';
   if (window.ML4HLTheme) return;
