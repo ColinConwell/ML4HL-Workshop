@@ -109,7 +109,8 @@ The standard descent algorithm, **gradient descent**, uses only local informatio
 
 ```{python}
 #| label: w-error-landscape
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("error_landscape")
 ```
 
@@ -145,7 +146,8 @@ Drag the two round handles (or grab the line itself) until the fit looks right. 
 
 ```{python}
 #| label: w-ols-fit
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("ols_fit")
 ```
 
@@ -157,7 +159,8 @@ A straight line has a closed-form algebraic solution, but most machine learning 
 
 ```{python}
 #| label: w-gd-regression
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("gd_regression")
 ```
 
@@ -182,7 +185,8 @@ The issue with non-linearities like splines is the possibility of over-fitting: 
 
 ```{python}
 #| label: w-spline-scaling
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("spline_scaling")
 ```
 
@@ -196,7 +200,8 @@ Drag the hinges below, or press **optimize knots (GD)** to let gradient descent 
 
 ```{python}
 #| label: w-spline-relu-basis
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("spline_relu_basis")
 ```
 
@@ -217,6 +222,8 @@ Widgets with a documented data mode accept a `data=` dictionary so you can inspe
 
 ```{python}
 #| label: w-regression-domain-data
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 from ml4hl.samples import perinatal_reading, wordbank_vocab
 
 show("gd_regression", data=perinatal_reading(n=150))
@@ -224,6 +231,8 @@ show("gd_regression", data=perinatal_reading(n=150))
 
 ```{python}
 #| label: w-spline-wordbank-data
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("spline_scaling", data=wordbank_vocab(n=180), degree="cubic")
 ```
 
@@ -530,7 +539,8 @@ Each observation is a point with one coordinate per feature (its position along 
 
 ```{python}
 #| label: w-category-manifolds
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("category_manifolds")
 ```
 
@@ -546,7 +556,8 @@ A classifier learns the boundaries of categorical groupings based on a set of fe
 
 ```{python}
 #| label: w-logistic-gd
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("logistic_gd")
 ```
 
@@ -558,7 +569,8 @@ In 1958 Frank Rosenblatt introduced the **perceptron**, a single artificial neur
 
 ```{python}
 #| label: w-perceptron
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("perceptron")
 ```
 
@@ -595,6 +607,12 @@ zoo = [
         ylabel="melodic pleasantness",
     ),
 ]
+```
+
+```{python}
+#| label: w-classifier-zoo-display
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("classifier_zoo", data=zoo)
 ```
 
@@ -869,7 +887,8 @@ A **connectivity-based** criterion defines a cluster as a connected neighborhood
 
 ```{python}
 #| label: w-percolation
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("percolation")
 ```
 
@@ -886,7 +905,8 @@ Switch the mode toggle to **exemplar voting** to inspect **affinity propagation*
 
 ```{python}
 #| label: w-kmeans
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("kmeans")
 ```
 
@@ -898,7 +918,8 @@ When the number of clusters $k$ is unknown in advance, **agglomerative hierarchi
 
 ```{python}
 #| label: w-dendrogram
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("dendrogram")
 ```
 
@@ -1130,7 +1151,8 @@ An **autoencoder** is a neural network trained to reconstruct its own input afte
 
 ```{python}
 #| label: w-autoencoder
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("autoencoder")
 ```
 
@@ -1140,6 +1162,8 @@ Because the target output is the input itself ($y = x$), an autoencoder is a can
 
 ```{python}
 #| label: w-autoencoder-digits
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 from ml4hl.samples import digits_images
 
 show("autoencoder", data=digits_images(n=300), bottleneck=4)
@@ -1151,7 +1175,8 @@ A linear **projection** reduces dimensionality by taking the dot product of each
 
 ```{python}
 #| label: w-projection
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("projection")
 ```
 
@@ -1163,6 +1188,8 @@ To inspect how keeping $k$ principal components reconstructs individual multi-fe
 
 ```{python}
 #| label: w-pca-reconstruct
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("pca_reconstruct", data=dict(
     X=StandardScaler().fit_transform(emotion_ratings[core_emotions].sample(120, random_state=7).to_numpy()),
     feature_names=[c.split("/")[0] for c in core_emotions],
@@ -1311,6 +1338,8 @@ Projecting from 101 acoustic features down to two principal components separates
 
 ```{python}
 #| label: w-projection-finch
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 codes = call_metadata.calltype.astype("category").cat.codes.to_numpy()
 keep = rng.choice(len(standardized_calls), 220, replace=False)
 show("projection", data=dict(X2=call_components[keep, :2] * np.array([1, -1]), Xhigh=standardized_calls[keep], labels=codes[keep]), mode="random")
@@ -1332,7 +1361,8 @@ Suppose two systems respond to the same set of $N$ stimuli: a cortical region an
 
 ```{python}
 #| label: w-rdm-builder
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("rdm_builder")
 ```
 
@@ -1419,6 +1449,8 @@ Inspect the within-category blocks along the diagonal and compare them with betw
 
 ```{python}
 #| label: w-rdm-things
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 small = concept_metadata[concept_metadata.category.isin(concept_categories[:4])].groupby("category").head(6).sort_values("category")
 show("rdm_builder", data=dict(
     names=small.concept.tolist(), groups=small.category.tolist(),
@@ -1504,7 +1536,8 @@ A model can learn the peculiarities of the examples it has seen instead of a pat
 
 ```{python}
 #| label: w-overfitting
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("overfitting")
 ```
 
@@ -1522,7 +1555,8 @@ Random observation-level folds estimate performance on new observations drawn un
 
 ```{python}
 #| label: w-cv-folds
-#| echo: false
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 show("cv_folds")
 ```
 
@@ -1545,6 +1579,8 @@ Below, we pass age-8 Child Behavior Checklist (CBCL) externalizing scores (paren
 
 ```{python}
 #| label: w-resampling
+#| code-fold: true
+#| code-summary: "Show the interactive figure code"
 from ml4hl.samples import perinatal_attention_groups
 
 show("resampling", data=perinatal_attention_groups(n_per_group=32))

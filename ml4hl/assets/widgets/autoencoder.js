@@ -122,7 +122,7 @@ ML4HL.register('autoencoder', function (root, cfg) {
         var count = Math.min(n, 6);
         return M.range(count).map(function (i) { return [52 + layer * 124, 76 + (i - (count - 1) / 2) * 18]; });
       });
-      var svg = '<svg viewBox="0 0 600 180" role="img" aria-label="Autoencoder architecture: ' + D + ' input pixels, ' + H + ' encoder units, ' + K + ' bottleneck numbers, ' + H + ' decoder units, ' + D + ' reconstructed pixels. Representative units are shown; colors indicate current activations.">';
+      var svg = '<svg viewBox="0 0 600 180" role="img" aria-label="Autoencoder architecture: ' + D + ' input pixels, ' + H + ' encoder units, ' + K + (K === 1 ? ' bottleneck number, ' : ' bottleneck numbers, ') + H + ' decoder units, ' + D + ' reconstructed pixels. Representative units are shown; colors indicate current activations.">';
       positions.forEach(function (pts, layer) {
         if (layer < 4) pts.forEach(function (a) { positions[layer + 1].forEach(function (b) {
           svg += '<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" class="wae-edge"/>';
@@ -130,7 +130,7 @@ ML4HL.register('autoencoder', function (root, cfg) {
       });
       positions.forEach(function (pts, layer) {
         pts.forEach(function (point, i) { svg += '<circle cx="'+point[0]+'" cy="'+point[1]+'" r="6" data-layer="'+layer+'" data-unit="'+i+'"/>'; });
-        svg += '<text x="'+(52+layer*124)+'" y="148">'+names[layer]+'</text><text x="'+(52+layer*124)+'" y="165">'+widths[layer]+(layer===0 || layer===4 ? ' pixels' : ' numbers')+'</text>';
+        svg += '<text x="'+(52+layer*124)+'" y="148">'+names[layer]+'</text><text x="'+(52+layer*124)+'" y="165">'+widths[layer]+(layer===0 || layer===4 ? ' pixels' : widths[layer] === 1 ? ' number' : ' numbers')+'</text>';
       });
       architecture.innerHTML = svg + '</svg><p>Input → compress → small code → rebuild. Representative units are shown; their colors follow the selected example’s actual activations.</p>';
       architectureNodes = Array.from(architecture.querySelectorAll('circle'));

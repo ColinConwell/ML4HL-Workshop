@@ -39,3 +39,7 @@ for line in source.splitlines():
   assert stack, "Closing a Markdown container that is not open"
   stack.pop()
 assert not stack, f"Unclosed Markdown containers: {stack}"
+
+widget_blocks = [block for block in blocks if re.search(r"^show\(", block, re.M)]
+assert all("#| code-fold: true" in block for block in widget_blocks), "Interactive figure code is not expandable and folded"
+print(f"PASS: {len(widget_blocks)} interactive figure cells are folded and expandable")
