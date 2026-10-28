@@ -1,0 +1,1385 @@
+---
+title: "Machine Learning for Human Learners"
+subtitle: "Part 1: Models, Data, and Generalization"
+author: "Colin Conwell"
+date: last-modified
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    respect-user-color-scheme: true
+    include-in-header: assets/theme-head.html
+    css: styles.css
+    title-block-banner: true
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    code-fold: false
+    code-summary: "Show the code"
+    code-copy: true
+    code-overflow: wrap
+    code-block-bg: true
+    code-block-border-left: true
+    embed-resources: true
+    fig-responsive: true
+    link-external-newwindow: true
+    df-print: paged
+jupyter: python3
+execute:
+  echo: true
+  warning: false
+  message: false
+  error: false
+  fig-width: 8
+  fig-height: 4.5
+  fig-align: center
+  fig-format: retina
+editor: source
+---
+
+::: {.lead}
+Machine learning methods use observations to fit models, discover structure, and make predictions. This tutorial introduces the main ideas through interactive diagrams and Python examples drawn from anthropology, psychology, biology, music research, and medicine. You will adjust models, inspect their errors, and test how well they work on held-out observations.
+:::
+
+**How to use this page.** Every figure with a play button or a slider is live: drag things, break things, and watch the readout underneath tell you what happened. The grey code blocks are real [scikit-learn](https://scikit-learn.org) code you can copy into your own analyses. Prefer to run it yourself? The [generated notebook opens in Google Colab](https://colab.research.google.com/github/ColinConwell/ML4HL-Workshop/blob/main/ML4HL-Tutorial.ipynb), including the interactive figures. [Download the source and notebook](https://github.com/ColinConwell/ML4HL-Workshop).
+
+::: {.roadmap}
+<div class="sup"><strong>Regression</strong><small>predict a number</small></div>
+<div class="sup"><strong>Categorization</strong><small>predict a label</small></div>
+<div class="unsup"><strong>Clustering</strong><small>find groups nobody labeled</small></div>
+<div class="unsup"><strong>Dimensionality reduction</strong><small>represent data with fewer coordinates</small></div>
+<div class="comp"><strong>RSA</strong><small>compare two minds (or models)</small></div>
+<div class="eval"><strong>Cross-validation</strong><small>evaluate held-out performance</small></div>
+:::
+
+```{python}
+#| label: setup
+#| code-fold: true
+#| code-summary: "Setup: imports and the ml4hl helper"
+import sys
+import os
+N_JOBS = int(os.environ.get("ML4HL_N_JOBS", "2"))
+N_THREADS = int(os.environ.get("ML4HL_THREADS", "2"))
+for _thread_variable in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ[_thread_variable] = str(N_THREADS)
+
+import ml4hl  # Installed locally, or bundled by the generated Colab setup.
+
+from ml4hl import show
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from threadpoolctl import threadpool_limits
+
+# Bound native-library threads too; n_jobs controls a separate layer of parallelism.
+_thread_limit = threadpool_limits(limits=N_THREADS)
+
+ml4hl.reset_assets()
+ml4hl.set_style()
+ml4hl.enable_theme_plots()
+C = ml4hl.COLORS
+rng = np.random.default_rng(2026)
+```
+
+# What is machine learning?
+
+## A machine is a recipe
+
+A *machine*, for our purposes, is anything that turns an **input** into an **output** by following a fixed recipe. A thermostat turns a temperature into "heat on" or "heat off". A spreadsheet formula turns a column of numbers into their average. Your microwave turns "2 minutes, high" into a hot burrito. None of these machines *learn*: give them the same input tomorrow and they will do exactly the same thing.
+
+## Learning is changing the recipe
+
+*Learning* means the recipe improves with experience. Show a learning machine a few hundred examples of inputs paired with the outputs you wanted, and it adjusts its internal parameters (the *weights*, or knobs) until its outputs match yours more closely. The real test is whether that tuned recipe generalizes to inputs it has **never seen**.
+
+Memorizing examples can be part of a learning algorithm, as in nearest-neighbor methods. The practical question is whether the resulting predictions work on new observations. A fixed formula whose behavior never changes with experience does not learn from data.
+
+::: {.callout-tip .takeaway title="Takeaway #1"}
+Learning uses experience to shape a model; held-out evaluation tests whether that model generalizes.
+:::
+
+## Learning is rolling downhill
+
+How does a machine know which way to turn its knobs? It evaluates an **error** (or **loss**): a single number measuring how far the machine's current predictions fall from the target outputs. Plotting error across every possible knob setting forms a landscape of hills and valleys. Gradient-based training takes steps intended to reduce the objective; it can converge to a local solution or fail to converge.
+
+The standard descent algorithm, **gradient descent**, uses only local information: measure the slope of the error surface at the current position, take a step in the steepest downhill direction, and repeat. The size of that step is the **learning rate**. Press play below, try a larger step size, and drag the ball to different starting points.
+
+```{python}
+#| label: w-error-landscape
+#| echo: false
+show("error_landscape")
+```
+
+With a tiny step size, the ball settles into the first valley it encounters and stays there, even when a deeper basin sits just across the ridge. That shallow valley is a **local minimum**; the lowest point on the entire surface is the **global minimum**. Larger steps can carry the ball across small ridges, while steps that are too large overshoot the valley walls and oscillate without converging.
+
+::: {.callout-tip .takeaway title="Takeaway #2"}
+Many learning methods optimize an objective, but a global optimum is not guaranteed and need not give the best generalization.
+:::
+
+Optimization provides a useful framework for several methods here: regression fits coefficients, K-means updates centroids, and autoencoders minimize reconstruction loss. Other methods use different procedures: nearest-neighbor classification stores examples, and hierarchical clustering repeatedly merges clusters. Their objectives and guarantees must be considered separately.
+
+## Research Domains in This Tutorial
+
+Each method section moves from interactive simulation to working Python code on open research datasets drawn from five fields:
+
+::: {.field-grid}
+<div class="field-card"><h4>Anthropology: household surveys &amp; media</h4><p>World Bank LSMS household health and expenditure surveys; Gapminder Dollar Street home photographs and image embeddings.</p></div>
+<div class="field-card orange"><h4>Developmental &amp; clinical psychology</h4><p>Stanford Wordbank CDI infant vocabulary curves (8–30 months); IHDP perinatal stress, child reading, language, and attention; DASS-42 symptom scales.</p></div>
+<div class="field-card green"><h4>Music therapy &amp; vocal communication</h4><p>The Music Lab cross-cultural lullabies, healing songs, and infant-directed vocalizations across 21 societies; Cowen et al. 13-dimensional music emotion ratings.</p></div>
+<div class="field-card"><h4>Organismal &amp; perceptual biology</h4><p>Zebra finch vocal repertoires and spectrograms (Elie &amp; Theunissen); THINGS human odd-one-out similarity judgments.</p></div>
+<div class="field-card red"><h4>Clinical medicine</h4><p>Fine-needle breast biopsy cytomorphology and PneumoniaMNIST pediatric chest X-rays.</p></div>
+:::
+
+# Regression: Predict a Number
+
+Regression predicts a continuous quantity from one or more measurements: a household's total expenditure from health and demographic indicators, a child's reading score from perinatal risk factors, or productive vocabulary size from age in months. In linear regression, the knobs set the slope and intercept of a straight line (or a flat hyperplane across many predictors), and the error is the sum of squared vertical distances between the line and the observed points.
+
+## Fit a Line by Eye
+
+Drag the two round handles (or grab the line itself) until the fit looks right. Each residual square shows a **residual** — the vertical miss for one observation — drawn as a literal square proportional to the residual in screen coordinates. The meter in the corner sums the areas of all those squares.
+
+```{python}
+#| label: w-ols-fit
+#| echo: false
+show("ols_fit")
+```
+
+Click **show best line** to compare your eye fit against the analytic optimum, or **snap to least squares** to animate your line to the minimum-error solution. Because **ordinary least squares** (OLS) minimizes the sum of *squared* residuals, a residual twice as large contributes four times as much area, making large residuals costly. Leverage specifically concerns extreme predictor values, which can make observations influential when combined with their residuals.
+
+## Fit a Line by Rolling Downhill
+
+A straight line has a closed-form algebraic solution, but most machine learning models do not. To bridge the two worlds, we can fit the exact same line by gradient descent. Because a line has two knobs (slope and intercept), the error landscape is a two-dimensional bowl: darker contours mark lower error, and the gold star marks the least-squares minimum.
+
+```{python}
+#| label: w-gd-regression
+#| echo: false
+show("gd_regression")
+```
+
+Click anywhere on the contour map to initialize a new starting line, then press play. A moderate learning rate tracks smoothly down the valley floor to the star; an overly large learning rate zig-zags across the canyon walls or diverges.
+
+::: {.callout-tip .takeaway title="Takeaway #3"}
+A model is a parameterized family of functions. Training adjusts the parameters to minimize error.
+:::
+
+## Non-linear Regression: Bending the Line with Splines
+
+Relationships in biological and developmental data are often nonlinear. Average vocabulary production changes with age, while children differ substantially at each age. The position and shape of any apparent acceleration depend on the population and measurement instrument. Dose-response curves may saturate, and acoustic signals can oscillate.
+
+One way to model curvature is a global polynomial, which we examine in the cross-validation section. High-degree polynomials can become unstable near boundaries or outside the observed range; this depends on the data, degree, and regularization.
+
+A **spline** solves this by working *locally*. Divide the input axis at a set of landmark points called **knots**, and fit simple low-degree pieces between them:
+
+- A **piecewise-linear spline** (degree 1) connects the knots with straight line segments, like a carpenter's folding ruler.
+- A **cubic spline** (degree 3) joins smooth cubic curves at the knots so that both the slope and curvature match continuously across every joint.
+
+```{python}
+#| label: w-spline-scaling
+#| echo: false
+show("spline_scaling")
+```
+
+Press play (or scrub the segment count $K$) in Figure 4 above. The left panel shows a smooth multi-frequency target curve tiled by $K$ piecewise segments; the right panel plots the mean squared error (MSE) against $K$ on log-log axes. Each time you double the number of segments, the width of each piece halves ($h \propto K^{-1}$), and for a piecewise-linear fit on a smooth curve the approximation error can approach the asymptotic rate $\text{MSE} \propto K^{-4}$. Switch the data toggle in the widget gallery (or pass real data below) to see the same resolution scaling on child vocabulary growth, where training reconstruction error and between-child variability should be distinguished. Increasing flexibility alone does not demonstrate better held-out prediction.
+
+### From Splines to Neural Networks: A Bank of ReLU Hinges
+
+How do you write a piecewise-linear spline so a linear regression solver can fit it? Instead of fitting separate equations on each interval, you build a **basis** of **hinge functions** — one at each knot $\kappa_j$:
+
+$$h_j(x) = \max(0,\, x - \kappa_j)$$
+
+Each hinge stays flat at zero to the left of its knot $\kappa_j$ and rises with unit slope to the right. Adding a weighted sum of hinges to a baseline line bends the slope at every knot:
+
+$$\hat{y}(x) = w_0 + w_1 x + \sum_{j=1}^{K} v_j \max(0,\, x - \kappa_j)$$
+
+If you have ever heard of a **Rectified Linear Unit (ReLU)** in deep learning, you are looking right at it: $\text{ReLU}(z) = \max(0, z)$ is a hinge function. The difference between classical spline regression and a single-layer ReLU neural network comes down to *how the knots are chosen*:
+
+- **Spline regression** places the knots $\kappa_j$ at fixed positions (equally spaced or at quantiles of $x$) and solves for the output weights $v_j$ in one step by least squares.
+- **A neural network** treats the knot positions $\kappa_j$ as learnable weights too, using gradient descent to slide the hinges into the sharpest bends of the data — and then stacks multiple layers of hinges so the kinks can fold high-dimensional spaces.
+
+Try both below: drag the knot pins along the horizontal axis by hand, or press **optimize knots (GD)** to watch gradient descent migrate the hinges toward the steepest bends.
+
+```{python}
+#| label: w-spline-relu-basis
+#| echo: false
+show("spline_relu_basis")
+```
+
+::: {.callout-tip .takeaway title="Takeaway #4"}
+Spline regression combines basis functions to model curvature. A one-dimensional ReLU network represents a continuous piecewise-linear function whose breakpoints can be learned.
+:::
+
+::: {.callout-note title="Measurement and interpretation"}
+The perinatal stress index is a teaching composite constructed from neonatal health, gestation, birthweight, smoking, prenatal care, and maternal education, with manually chosen weights and full-sample scaling. It is not a validated maternal-stress measure. The externalizing score is not a specific attention scale. These observational examples do not identify causal effects. Predictive models below use the original covariates rather than the full-sample composite.
+:::
+
+## Your Data in the Widgets
+
+Widgets with a documented data mode accept a `data=` dictionary so you can inspect your own variables in the same interactive view. Below, we pass two developmental datasets straight into the regression and spline widgets:
+
+1. **Perinatal stress and child reading achievement** (`load_perinatal_dev`, from the longitudinal Infant Health and Development Program cohort, $n = 837$), plotting a composite perinatal stress and adversity index against Woodcock-Johnson broad reading scores at age 8.
+2. **Early vocabulary growth** (`load_wordbank`, from Stanford Wordbank MacArthur-Bates CDI parent reports across $7,955$ American English toddlers aged 8 to 30 months).
+
+```{python}
+#| label: w-regression-domain-data
+from ml4hl.samples import perinatal_reading, wordbank_vocab
+
+show("gd_regression", data=perinatal_reading(n=150))
+```
+
+```{python}
+#| label: w-spline-wordbank-data
+show("spline_scaling", data=wordbank_vocab(n=180), degree="cubic")
+```
+
+## Quick Start: Linear & Spline Regression in Scikit-learn
+
+Supervised `scikit-learn` estimators share a common workflow: instantiate the model, call `.fit(X_train, y_train)` to estimate parameters on training data, and call `.score(X_test, y_test)` or `.predict(X_test)` on held-out test data. Transformers and unsupervised estimators expose interfaces appropriate to their tasks.
+
+First, let's fit a linear regression on **World Bank Living Standards Measurement Study (LSMS)** household survey data (`load_household_survey`, $5,006$ households across $194$ communes), predicting log total household expenditure from $10$ demographic, educational, agricultural, expenditure, and commune-level health indicators. We hold out entire communes. Medical spending is a component of household spending, so this example measures contemporaneous association rather than forecasting future expenditure. Commune summaries also require population-level information at prediction time:
+
+```{python}
+#| label: household-quickstart
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split, GroupShuffleSplit
+from ml4hl.data import load_household_survey
+
+survey = load_household_survey()
+survey_features = [
+    "educ_years", "urban", "farm", "hhsize", "head_age", "head_female",
+    "log_med_exp", "commune_illness_rate", "commune_insurance_rate", "commune_pharmacy_visits",
+]
+X_hh = survey[survey_features]
+y_hh = survey["log_total_exp"]
+
+train_i, test_i = next(GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=0).split(X_hh, groups=survey["commune"]))
+X_train, X_test = X_hh.iloc[train_i], X_hh.iloc[test_i]
+y_train, y_test = y_hh.iloc[train_i], y_hh.iloc[test_i]
+assert set(survey.commune.iloc[train_i]).isdisjoint(survey.commune.iloc[test_i])
+
+model = LinearRegression()            # 1. instantiate
+model.fit(X_train, y_train)           # 2. fit on training households
+r2 = model.score(X_test, y_test)      # 3. evaluate R² on held-out households
+print(f"R² on {len(y_test):,} held-out households: {r2:.2f}")
+```
+
+```{python}
+#| label: household-plot
+#| fig-height: 3.6
+fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.6), gridspec_kw={"width_ratios": [1, 1.25]})
+
+axes[0].scatter(y_test, model.predict(X_test), s=10, color=C["blue"], alpha=0.35)
+lims = [y_hh.min(), y_hh.max()]
+axes[0].plot(lims, lims, ls="--", color=C["muted"], lw=1)
+axes[0].set(xlabel="actual log expenditure", ylabel="predicted log expenditure", title="Held-out households")
+
+std_coef = pd.Series(model.coef_ * X_train.std().to_numpy(), index=X_hh.columns).sort_values()
+axes[1].barh(std_coef.index, std_coef.values,
+             color=[C["orange"] if v > 0 else C["blue"] for v in std_coef])
+axes[1].axvline(0, color=C["ink"], lw=0.8)
+axes[1].set(xlabel="standardized coefficient (per 1-SD change)", title="Household & health predictors")
+plt.tight_layout()
+```
+
+Now compare a straight line against `SplineTransformer` on the **Wordbank CDI child vocabulary** trajectory. In `scikit-learn`, `SplineTransformer` expands a column $x$ into its spline basis columns (piecewise-linear B-splines for `degree=1`, or cubic B-splines for `degree=3`), which we pipe directly into `RidgeCV`:
+
+```{python}
+#| label: wordbank-splines-code
+#| fig-height: 3.6
+from sklearn.preprocessing import SplineTransformer
+from sklearn.linear_model import RidgeCV
+from sklearn.pipeline import make_pipeline
+from ml4hl.data import load_wordbank
+
+wb = load_wordbank("English (American)")
+X_age = wb[["age"]].to_numpy(dtype=float)
+y_vocab = (wb["vocab_share"] * 680.0).to_numpy(dtype=float)
+
+Xa_tr, Xa_te, yv_tr, yv_te = train_test_split(X_age, y_vocab, test_size=0.25, random_state=0)
+
+spline_models = {
+    "straight line (OLS)": LinearRegression(),
+    "piecewise-linear spline (degree=1, 6 knots)": make_pipeline(
+        SplineTransformer(n_knots=6, degree=1), RidgeCV()
+    ),
+    "cubic B-spline (degree=3, 6 knots)": make_pipeline(
+        SplineTransformer(n_knots=6, degree=3), RidgeCV()
+    ),
+}
+
+age_grid = np.linspace(8, 30, 200)[:, None]
+fig, ax = plt.subplots(figsize=(7.2, 3.6))
+means = wb.groupby("age")["vocab_share"].mean() * 680.0
+ax.scatter(wb["age"] + rng.uniform(-0.3, 0.3, len(wb)), y_vocab, s=4, alpha=0.08, color=C["muted"], label="CDI administrations")
+ax.plot(means.index, means.values, "o", color=C["ink"], ms=4.5, label="monthly mean")
+
+for (label, mdl), col, ls in zip(spline_models.items(), [C["orange"], C["green"], C["blue"]], ["--", "-.", "-"]):
+    mdl.fit(Xa_tr, yv_tr)
+    r2_val = mdl.score(Xa_te, yv_te)
+    ax.plot(age_grid[:, 0], mdl.predict(age_grid), color=col, ls=ls, lw=2.2, label=f"{label} (R² = {r2_val:.3f})")
+
+ax.set(xlabel="child age (months)", ylabel="checklist production share × 680 (rescaled units)",
+       title="Vocabulary acceleration from 8 to 30 months: linear vs spline regression")
+ax.legend(frameon=False, fontsize=8.5, loc="upper left")
+plt.tight_layout()
+```
+
+Compare the fitted curves and held-out scores above. The two CDI forms have different checklists: multiplying checklist share by 680 creates a common numerical scale, not a validated conversion to a common vocabulary count. Overlapping ages, form composition, and repeated administrations can influence this illustration; use instrument-aware analyses and child-level splits for developmental inference.
+
+## Applied Examples
+
+::: {.panel-tabset}
+
+### Anthropology: Dollar Street Home Photos
+
+[Dollar Street](https://www.gapminder.org/dollar-street) is a documentary photography project in which field photographers visited hundreds of households across dozens of countries and photographed standardized everyday items (the front door, the bed, the stove, the toothbrush) alongside each household's monthly purchasing-power-adjusted income.
+
+To run regression on photographs, we first pass each image through a pretrained vision-language backbone (here [SigLIP 2](https://huggingface.co/google/siglip2-base-patch16-224)), which maps each image to a 768-dimensional embedding vector where visually and semantically related scenes lie nearby. We then fit regularized linear regression (`RidgeCV`) from those 768 features to log monthly income.
+
+```{python}
+#| label: dollar-street-load
+from ml4hl.data import load_dollar_street
+
+ds = load_dollar_street()
+meta, emb, thumbs = ds["meta"], ds["emb"].astype(float), ds["thumbs"]
+print(f"{len(meta)} photos from {meta.place.nunique()} households in {meta.country.nunique()} countries")
+print(f"monthly income: ${meta.income.min():.0f} to ${meta.income.max():,.0f} (PPP dollars)")
+meta.head()
+```
+
+```{python}
+#| label: dollar-street-thumbs
+#| fig-height: 2.4
+order = meta.sort_values("income").index.to_numpy()
+picks = order[np.linspace(0, len(order) - 1, 10).astype(int)]
+fig, axes = plt.subplots(1, 10, figsize=(10, 1.6))
+for ax, i in zip(axes, picks):
+    ax.imshow(thumbs[i]); ax.set_axis_off()
+    ax.set_title(f"${meta.income[i]:,.0f}", fontsize=8)
+fig.suptitle("Ten homes ordered by monthly income (PPP USD)", y=1.08, fontsize=10)
+plt.show()
+```
+
+Because each household contributes multiple photographs (bed, stove, front door), random train/test splits would place different rooms from the same home on both sides of the split. We use `GroupKFold` grouped by household (`meta.place`) so every test prediction is made on an unseen home.
+
+```{python}
+#| label: dollar-street-ridge
+from sklearn.model_selection import GroupKFold, cross_val_predict
+from sklearn.metrics import r2_score
+
+y_log = np.log10(meta.income)
+ridge = RidgeCV(alphas=np.logspace(-2, 3, 12))
+pred = cross_val_predict(ridge, emb, y_log, groups=meta.place, cv=GroupKFold(5, shuffle=True, random_state=0))
+print(f"R² on unseen households: {r2_score(y_log, pred):.2f}")
+```
+
+```{python}
+#| label: dollar-street-plot
+#| fig-height: 4
+region_names = {"af": "Africa", "am": "Americas", "as": "Asia", "eu": "Europe"}
+fig, ax = plt.subplots(figsize=(6.5, 4))
+sns.scatterplot(x=10 ** y_log, y=10 ** pred, hue=meta.region.map(region_names), s=16, alpha=0.75,
+                palette=[C[c] for c in ["orange", "blue", "red", "green"]], ax=ax)
+ax.set(xscale="log", yscale="log", xlabel="actual monthly income ($)", ylabel="predicted from the photo ($)")
+ax.plot([30, 20000], [30, 20000], ls="--", color=C["muted"], lw=1)
+ax.legend(title=None, frameon=False)
+plt.show()
+```
+
+::: {.callout-warning title="Confounders and shortcut learning: what is the model actually measuring?"}
+When a high-dimensional model predicts a social or clinical outcome with high accuracy, inspect what cues drive the prediction. In household photographs, a vision backbone encodes construction materials and appliances, but also lighting, lens focal length, sensor noise, and regional vegetation. In fieldwork and clinical deployment, reliance on these correlated background cues (**shortcut learning**) can cause a model to fail when camera equipment or setting changes, or to reproduce regional and socioeconomic proxies that were never the scientific target.
+:::
+
+### Psychology: Perinatal Risk, Language & Reading
+
+In developmental psychopathology, researchers track how prenatal and neonatal risk factors relate to later language, reading, and attentional outcomes. Using the longitudinal IHDP cohort (`load_perinatal_dev`, $837$ children followed from birth to age 8 across $8$ clinical sites), we can compare linear and spline models predicting age-8 receptive vocabulary (`vocab_96m`, PPVT-R) and reading achievement (`reading_96m`, Woodcock-Johnson) from perinatal risk, birthweight, gestational age, maternal education, and early intervention status. The supplied table includes an upstream imputed maternal PPVT variable and complete-case outcome selection. We cannot reconstruct that upstream imputation inside each fold, so these illustrative scores are conditional on the released preprocessing and should not be treated as a fully leakage-audited clinical estimate:
+
+```{python}
+#| label: perinatal-regression
+#| fig-height: 3.5
+from ml4hl.data import load_perinatal_dev
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import cross_val_score
+
+peri = load_perinatal_dev()
+peri_cols = [
+    "prenatal_cigs_per_day", "prenatal_care_trimester", "birthweight_g", "gestational_age_wk",
+    "neonatal_health", "maternal_age", "maternal_ed_level", "maternal_vocab_ppvt", "intervention",
+]
+Xp = peri[peri_cols]
+site_cv = GroupKFold(5)
+
+for target_col, label in [("reading_96m", "Age-8 reading (Woodcock-Johnson)"),
+                          ("vocab_96m", "Age-8 receptive language (PPVT-R)"),
+                          ("externalizing_96m", "Age-8 externalizing (CBCL)")]:
+    lin_pipe = make_pipeline(StandardScaler(), RidgeCV(alphas=np.logspace(-1, 3, 9)))
+    spl_pipe = make_pipeline(StandardScaler(), SplineTransformer(n_knots=4, degree=2), RidgeCV(alphas=np.logspace(0, 4, 9)))
+    s_lin = cross_val_score(lin_pipe, Xp, peri[target_col], groups=peri["site"], cv=site_cv).mean()
+    s_spl = cross_val_score(spl_pipe, Xp, peri[target_col], groups=peri["site"], cv=site_cv).mean()
+    print(f"{label:<42} | Linear R² = {s_lin:.2f} | Spline R² = {s_spl:.2f}")
+```
+
+:::
+
+::: {.callout-note .faster title="Going faster"}
+`scikit-learn` estimators run on the CPU by default. Two drop-in extensions accelerate the same API without code changes:
+
+- **NVIDIA cuML**: on a Colab GPU runtime, load `%load_ext cuml.accel` at the top of the notebook to dispatch `Ridge`, `KMeans`, `PCA`, and `UMAP` to the GPU.
+- **Intel Extension for scikit-learn**: `pip install scikit-learn-intelex`, then call `from sklearnex import patch_sklearn; patch_sklearn()` before importing `scikit-learn` estimators.
+:::
+
+# Categorization: Predict a Label
+
+Where regression predicts a continuous number, **classification** predicts a discrete *category*: benign or malignant biopsy, infant-directed lullaby or adult dance song, begging call or distance call. Different classifiers use different fitting procedures; their predictions define a **decision boundary** that partitions feature space into class territories.
+
+## What Categories Look Like to a Machine
+
+Each observation is a point with one coordinate per feature. A category forms a cloud or **manifold** of points in that space. Some manifolds form well-separated clusters that a single flat hyperplane can split; others form interlocking crescents, concentric rings, or alternating quadrants where any straight line fails.
+
+```{python}
+#| label: w-category-manifolds
+#| echo: false
+show("category_manifolds")
+```
+
+Switch across the five geometries above and watch the dashed line, which shows a regularized multinomial logistic classifier fitted by gradient descent to the current cloud. Read its training accuracy as you change the geometry; a straight boundary cannot represent concentric rings or XOR. Click anywhere on the canvas to add points (shift-click for the next category) and watch the linear boundary re-fit.
+
+::: {.callout-tip .takeaway title="Takeaway #5"}
+A classifier is a boundary in feature space. The geometry of the category manifolds determines which boundary families can separate them.
+:::
+
+## Logistic Regression: A Boundary with Probability Estimates
+
+**Logistic regression** fits a linear boundary by passing the weighted sum of features through a logistic sigmoid, outputting a continuous probability between $0$ and $1$. Points far from the boundary receive probabilities near $0$ or $1$ depending on the class; points along the boundary receive $0.50$. Training minimizes **cross-entropy** (log loss), which penalizes high-confidence errors heavily.
+
+```{python}
+#| label: w-logistic-gd
+#| echo: false
+show("logistic_gd")
+```
+
+Press play to watch the probability field sharpen from uniform uncertainty ($0.50$ everywhere) into two territories. The solid line marks the $50\%$ boundary, the thin dashed lines mark the $25\%$ and $75\%$ contours, and the reference dashed line marks a numerical Newton solution computed in JavaScript for the same regularized binary objective. Probability estimates are not automatically calibrated on new populations. Increase the class overlap slider to see how the probability gradient widens when the two distributions interpenetrate.
+
+## Sneak Peek: The Linear Perceptron
+
+In 1958 Frank Rosenblatt introduced the **perceptron**, a single artificial neuron that computes a weighted sum of its inputs and outputs $1$ when the sum crosses a threshold:
+
+```{python}
+#| label: w-perceptron
+#| echo: false
+show("perceptron")
+```
+
+The left panel displays the network weights (separate colors distinguish positive and negative weights; line width indicates magnitude); the right panel displays the corresponding linear boundary in the input plane. Whenever the perceptron misclassifies a point, its update rule changes the weights in a direction that reduces that misclassification. Press play on the **separable** preset to watch the boundary converge, then switch to **XOR** to see why a single linear unit cycles indefinitely — a limitation that vanishes as soon as hidden layers of hinges are stacked (see the `mlp_xor` alternative in the optional local widget gallery and Part 2).
+
+## One Dataset, Five Classifiers
+
+Different classifier families carve feature space with different geometric primitives. Below, five `scikit-learn` estimators are fit across five settings of their primary complexity parameter on two datasets: simulated interlocking moons and cross-cultural songs from **The Music Lab's Natural History of Song Discography** (`load_musiclab("nhs")`, separating lullabies, healing songs, and dance songs across $86$ societies by perceived tempo/beat and melodic pleasantness).
+
+```{python}
+#| label: w-classifier-zoo
+from sklearn.datasets import make_moons
+from ml4hl.data import load_musiclab
+from ml4hl.zoo import decision_grids
+
+nhs = load_musiclab("nhs")
+nhs_sub = nhs[nhs["type"].isin(["Lullaby", "Dance", "Healing"])].reset_index(drop=True)
+X_moons, y_moons = make_moons(240, noise=0.3, random_state=0)
+zoo = [
+    decision_grids(X_moons, y_moons, name="moons (simulated)", class_names=["A", "B"]),
+    decision_grids(
+        nhs_sub[["form_fast", "form_melo"]].to_numpy(dtype=float),
+        nhs_sub["type"].to_numpy(),
+        name="Music Lab songs",
+        xlabel="perceived tempo / beat",
+        ylabel="melodic pleasantness",
+    ),
+]
+show("classifier_zoo", data=zoo)
+```
+
+Slide each model from stiff to flexible and compare its training and held-out scores. More flexibility can improve training fit while worsening generalization, but monotonic changes and an intermediate test optimum are not guaranteed for every algorithm or sample. Repeatedly choosing settings from the displayed test scores turns that split into a validation set; a final performance estimate needs separate data.
+
+| Model | Boundary geometry | Complexity parameter | `scikit-learn` estimator |
+|---|---|---|---|
+| Logistic regression | flat hyperplane | `C` (inverse $L_2$ penalty) | `LogisticRegression` |
+| $k$-nearest neighbors | local majority vote | `n_neighbors` ($k$) | `KNeighborsClassifier` |
+| Support vector machine | smooth radial kernels | `gamma` (kernel bandwidth) | `SVC` |
+| Decision tree | axis-aligned rectangles | `max_depth` | `DecisionTreeClassifier` |
+| Gradient boosting | additive ensemble of shallow trees | `max_iter` (boosting rounds) | `HistGradientBoostingClassifier` |
+
+## Applied Examples
+
+::: {.panel-tabset}
+
+### Music & Child Dev: Cross-cultural Vocalizations
+
+Across human societies, caregivers alter their voice when singing a lullaby to soothe an infant versus singing an adult song or speaking ([Mehr et al., 2019](https://doi.org/10.1126/science.aax0868); [Hilton et al., 2022](https://doi.org/10.1038/s41562-022-01410-x)). Using The Music Lab's cross-cultural corpus (`load_musiclab("ids")`, $1,608$ recordings across $21$ societies), can a classifier distinguish vocalization contexts in **societies it has never heard**?
+
+```{python}
+#| label: musiclab-classify
+#| fig-height: 3.6
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GroupKFold, StratifiedKFold, cross_val_score, cross_val_predict
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report
+
+ids = load_musiclab("ids")
+ac_cols = [c for c in ids.columns if c.startswith(("praat_", "mir_", "npvi_"))]
+X_ids = ids[ac_cols].to_numpy(dtype=float)
+
+# Center Acoustic Features Within Each Vocalist to Isolate How Speakers Shift Their Voice Across Contexts
+X_within = ids.groupby("id_person")[ac_cols].transform(lambda s: s - s.mean()).to_numpy(dtype=float)
+soc_cv = GroupKFold(5)
+clf_ids = make_pipeline(StandardScaler(), LogisticRegression(C=0.2, max_iter=1000))
+
+acc_song = cross_val_score(clf_ids, X_ids, ids["song"], groups=ids["id_site"], cv=soc_cv).mean()
+acc_4way = cross_val_score(clf_ids, X_within, ids["category"], groups=ids["id_site"], cv=soc_cv).mean()
+print(f"Song vs speech across unseen societies: {acc_song:.1%} (uniform-guess reference = 50%)")
+print(f"4-way vocalization context (adult/infant × song/speech) across unseen societies: {acc_4way:.1%} (uniform-guess reference = 25%)")
+
+pred_ids = cross_val_predict(clf_ids, X_within, ids["category"], groups=ids["id_site"], cv=soc_cv)
+fig, ax = plt.subplots(figsize=(4.6, 3.6))
+ConfusionMatrixDisplay.from_predictions(ids["category"], pred_ids, normalize="true", cmap="Blues",
+                                        colorbar=False, values_format=".2f", ax=ax, xticks_rotation=25)
+ax.set_title("Cross-cultural vocalization classification (unseen societies)")
+ax.grid(False)
+plt.tight_layout()
+```
+
+The four-context example centers recordings using all available contexts from each vocalist, including held-out vocalists. This is a batch, within-vocalist discrimination task; it does not estimate performance for a single unaccompanied recording from a new vocalist. Uniform-guess references assume equally likely classes; inspect class frequencies before treating them as empirical baselines.
+
+### Medicine: Biopsies & Chest X-rays
+
+The Wisconsin breast cancer dataset describes cell nuclei in 569 fine-needle biopsies with 30 measurements (size, texture, smoothness, concavity). Here we evaluate a standardized logistic regression classifier across 5 stratified folds:
+
+```{python}
+#| label: cancer-fit
+from sklearn.datasets import load_breast_cancer
+
+cancer = load_breast_cancer(as_frame=True)
+Xc, yc = cancer.data, cancer.target            # 0 = malignant, 1 = benign
+
+clf = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
+cv = StratifiedKFold(5, shuffle=True, random_state=0)
+acc = cross_val_score(clf, Xc, yc, cv=cv)
+print(f"accuracy across 5 folds: {acc.mean():.1%} (range {acc.min():.1%} to {acc.max():.1%})")
+```
+
+```{python}
+#| label: cancer-confusion
+#| fig-height: 3.2
+pred_c = cross_val_predict(clf, Xc, yc, cv=cv)
+fig, ax = plt.subplots(figsize=(3.8, 3.2))
+ConfusionMatrixDisplay.from_predictions(yc, pred_c, display_labels=cancer.target_names, cmap="Blues",
+                                        colorbar=False, ax=ax)
+ax.set_title("Every biopsy, predicted while held out")
+ax.grid(False)
+plt.show()
+print(classification_report(yc, pred_c, target_names=cancer.target_names, digits=3))
+```
+
+The held-out scores and class-specific report above describe this dataset and split. Class imbalance makes majority-class and balanced-accuracy baselines useful comparisons. Clinical use additionally requires external validation and a decision threshold chosen for the consequences of false negatives and false positives; this example does not establish clinical readiness.
+
+**Teaser for Part 2: chest X-rays.** [MedMNIST](https://medmnist.com) packages pediatric chest X-rays as $28 \times 28$ grayscale arrays (`PneumoniaMNIST`). Flattening each image into $784$ pixel intensities allows logistic regression to fit a linear template directly on raw pixels:
+
+```{python}
+#| label: medmnist-teaser
+#| fig-height: 2.2
+from medmnist import PneumoniaMNIST
+
+tr = PneumoniaMNIST(split="train", download=True, size=28)
+te = PneumoniaMNIST(split="test", download=True, size=28)
+Xp_tr, yp_tr = tr.imgs.reshape(len(tr.imgs), -1) / 255, tr.labels.ravel()
+Xp_te, yp_te = te.imgs.reshape(len(te.imgs), -1) / 255, te.labels.ravel()
+pix = make_pipeline(StandardScaler(), LogisticRegression(C=0.01, max_iter=2000)).fit(Xp_tr, yp_tr)
+print(f"pneumonia vs normal from raw pixels: {pix.score(Xp_te, yp_te):.1%} on {len(yp_te)} test X-rays")
+
+fig, axes = plt.subplots(1, 8, figsize=(9, 1.5))
+for k, ax in enumerate(axes):
+    i = np.where(yp_te == k % 2)[0][k]
+    ax.imshow(te.imgs[i], cmap="gray"); ax.set_axis_off()
+    ax.set_title(["normal", "pneumonia"][k % 2], fontsize=8)
+plt.show()
+```
+
+A consistent permutation of pixel columns leaves this linear model class unchanged. Convolutional models explicitly exploit local image structure; vision transformers can learn spatial relationships through patch representations and positional information. Neither architecture guarantees translation invariance or clinical generalization.
+
+### Biology: Zebra Finch Calls
+
+Zebra finches use a structured vocal repertoire: distance calls, chick begging calls, soft contact calls (tet, thuk, tuck), distress calls, and song. [Elie and Theunissen (2016)](https://doi.org/10.1007/s10071-015-0933-6) recorded thousands of vocalizations across dozens of identified birds. Each recording is summarized by 101 acoustic features (mean and standard deviation across 48 mel-frequency bands, spectral centroid, flatness, zero-crossing rate, and duration).
+
+```{python}
+#| label: finch-load
+#| fig-height: 2.4
+from ml4hl.data import load_finch
+
+finch = load_finch()
+fmeta, ffeats, fspecs = finch["meta"], finch["feats"], finch["specs"]
+print(f"{len(fmeta)} calls, {fmeta.calltype.nunique()} call types, {fmeta.bird.nunique()} birds")
+
+types = sorted(fmeta.calltype.unique())
+fig, axes = plt.subplots(1, len(types), figsize=(10, 1.6))
+for ax, t in zip(axes, types):
+    ax.imshow(fspecs[np.where(fmeta.calltype == t)[0][0]], cmap="magma", aspect="auto")
+    ax.set_title(t, fontsize=8); ax.set_axis_off()
+fig.suptitle("One spectrogram per call type (time left to right, frequency bottom to top)", y=1.1, fontsize=9)
+plt.show()
+```
+
+Because each individual bird contributes dozens of recordings, we split folds by bird (`groups=fmeta.bird`) to test whether the classifier generalizes to **birds it has never heard**:
+
+```{python}
+#| label: finch-classify
+#| fig-height: 4.2
+finch_cv = GroupKFold(5, shuffle=True, random_state=0)
+finch_models = {
+    "logistic regression": make_pipeline(StandardScaler(), LogisticRegression(max_iter=3000)),
+    "gradient boosting": HistGradientBoostingClassifier(max_iter=200, learning_rate=0.1),
+}
+for name, mdl in finch_models.items():
+    s = cross_val_score(mdl, ffeats, fmeta.calltype, groups=fmeta.bird, cv=finch_cv)
+    print(f"{name:>20}: {s.mean():.1%} correct on unseen birds (uniform-guess reference = {1 / len(types):.0%})")
+
+pred_f = cross_val_predict(finch_models["logistic regression"], ffeats, fmeta.calltype,
+                           groups=fmeta.bird, cv=finch_cv)
+fig, ax = plt.subplots(figsize=(5.4, 4.6))
+ConfusionMatrixDisplay.from_predictions(fmeta.calltype, pred_f, normalize="true", cmap="Blues",
+                                        colorbar=False, include_values=False, ax=ax, xticks_rotation=60)
+ax.set(title="Call-type confusion matrix on unseen birds (rows sum to 1)", xlabel="predicted", ylabel="actual")
+ax.grid(False)
+plt.show()
+```
+
+:::
+
+::: {.callout-note .faster title="Going faster"}
+For big tables, gradient-boosted trees are usually the strongest off-the-shelf classifiers. [XGBoost](https://xgboost.readthedocs.io) (`xgboost.XGBClassifier`) and [LightGBM](https://lightgbm.readthedocs.io) (`lightgbm.LGBMClassifier`) both follow the scikit-learn `fit`/`predict` API, so they drop straight into the code above, and both can train on a GPU.
+:::
+
+# Clustering: Find Groups Nobody Labeled
+
+Every regression and classification example above trained against an explicit target variable: a household expenditure, a clinical diagnosis, or a call type. That paradigm is **supervised** learning. Often, however, a dataset arrives without labels, and the scientific question is whether the observations organize into discrete subpopulations or vary along a continuous spectrum. Do psychiatric symptom questionnaires separate into distinct clinical subtypes? Do musical pieces group into discrete therapeutic moods? **Clustering** addresses this setting as a core method of **unsupervised** learning.
+
+When no external labels are used to score a partition, each clustering algorithm defines a specific geometric criterion for what counts as a group. We examine three foundational criteria below.
+
+## Clusters as Connected Ink
+
+A **connectivity-based** criterion defines a cluster as a connected neighborhood of nearby points. Place a disc of radius $\varepsilon$ around every observation; whenever two discs overlap, link their points into the same connected component.
+
+```{python}
+#| label: w-percolation
+#| echo: false
+show("percolation")
+```
+
+Increase the disc radius slowly from small to large. At tiny radii every observation sits isolated as singleton noise. At intermediate radii, dense neighborhoods coalesce into a small number of components before eventually merging into a single spanning cluster (for the statistical physics view of this phase transition on a lattice, see `percolation_grid` in the optional local widget gallery). The inset curve tracks the component count across radii: a wide plateau indicates a range of scales over which the cluster structure remains stable. DBSCAN additionally requires a minimum neighborhood density to distinguish core points, border points, and noise; connected components alone do not implement that rule. HDBSCAN examines density structure across scales.
+
+Switch the mode toggle to **exemplar voting** to inspect **affinity propagation**, where points exchange pairwise similarity messages until a subset of representative **exemplars** (marked with stars) emerges to anchor each cluster. Raising the preference parameter increases the number of selected exemplars.
+
+## K-means: Centers That Move
+
+**K-means** partitions observations into a pre-specified number of clusters $k$ by minimizing the within-cluster sum of squared distances (**inertia**) to $k$ centroids. After initializing $k$ center locations, the algorithm alternates two steps until convergence:
+
+1. **Assignment step**: assign each point to its closest centroid (creating Voronoi cells).
+2. **Update step**: recompute each centroid as the mean of the points assigned to it.
+
+```{python}
+#| label: w-kmeans
+#| echo: false
+show("kmeans")
+```
+
+Press **step** several times to watch the assignment territories and centroid positions alternate, then press play. Both steps strictly decrease (or leave unchanged) the total squared distance shown in the sparkline, meaning K-means is performing coordinate descent on an error surface. Try **new start** with random initialization several times: two centroids occasionally split a single cloud while leaving two distinct clouds merged — a local minimum of the inertia surface. Switching to **k-means++** spreads initial centroids with probability proportional to squared distance, often improving initialization without guaranteeing the best solution (and serving as `scikit-learn`'s default). When clusters are elongated or overlap with unequal covariance, **Gaussian Mixture Models** (`gmm_em` in the optional local widget gallery) generalize K-means by fitting elliptical covariance matrices and soft cluster probabilities via Expectation-Maximization.
+
+## Hierarchical Clustering: A Family Tree of Points
+
+When the number of clusters $k$ is unknown in advance, **agglomerative hierarchical clustering** constructs a nested hierarchy across all scales: start with each point in its own singleton cluster, merge the two closest clusters at each step, and record the merge distances as a binary tree (**dendrogram**).
+
+```{python}
+#| label: w-dendrogram
+#| echo: false
+show("dendrogram")
+```
+
+Drag the horizontal dashed cut line up and down: every subtree crossing the cut line forms a cluster. Long vertical branches indicate large distance gaps between merges, marking natural scales at which to partition the tree. Use the **linkage** selector to change how distance between groups is defined: **single linkage** (nearest-pair distance) follows elongated chains, **complete linkage** (farthest-pair distance) favors compact diameters, and **Ward linkage** minimizes within-cluster variance at each merge.
+
+::: {.callout-tip .takeaway title="Takeaway #6"}
+Clustering partitions data according to a geometric assumption (touching neighborhoods, spherical centers, or hierarchical linkage), even when the underlying distribution is a single continuum.
+:::
+
+## Applied Examples
+
+::: {.panel-tabset}
+
+### Psychology: Symptom Profiles
+
+The [DASS-42](https://openpsychometrics.org/_rawdata/) inventory measures depression, anxiety, and stress across 42 self-report items ($N \approx 32,000$ respondents after validity screening). Do respondents separate into discrete symptom subtypes, or vary continuously along a severity gradient?
+
+```{python}
+#| label: dass-load
+from ml4hl.data import load_dass, dass_items
+
+dass = load_dass()
+scales = ["depression", "anxiety", "stress"]
+print(f"{len(dass):,} respondents")
+dass[scales].describe().round(1)
+```
+
+```{python}
+#| label: dass-kmeans
+#| fig-height: 3.4
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+Zd = StandardScaler().fit_transform(dass[scales])
+sample = rng.choice(len(Zd), 4000, replace=False)       # subsample for O(n²) silhouette computation
+sil = {k: silhouette_score(Zd[sample], KMeans(k, n_init=10, random_state=0).fit_predict(Zd)[sample])
+       for k in range(2, 8)}
+
+km4 = KMeans(4, n_init=10, random_state=0).fit(Zd)
+profiles = dass[scales].groupby(km4.labels_).mean()
+profiles = profiles.loc[profiles.mean(axis=1).sort_values().index]
+
+fig, axes = plt.subplots(1, 2, figsize=(9.5, 3.4), gridspec_kw={"width_ratios": [1, 1.6]})
+axes[0].plot(list(sil), list(sil.values()), "o-", color=C["blue"])
+axes[0].set(xlabel="number of clusters (k)", ylabel="silhouette score", title="Cluster separation across k")
+for (cl, row), col in zip(profiles.iterrows(), [C["green"], C["gold"], C["orange"], C["red"]]):
+    axes[1].plot(scales, row.values, "o-", color=col, lw=2.2, label=f"{(km4.labels_ == cl).mean():.0%} of respondents")
+axes[1].set(ylabel="mean scale score", title="K-means symptom profiles (k = 4)")
+axes[1].legend(frameon=False, fontsize=8)
+plt.tight_layout()
+```
+
+Inspect the profile curves and silhouette scores above. Ordered severity profiles can arise when K-means partitions a continuous distribution. A silhouette maximum alone does not establish a true number of psychological subtypes, and these clusters are not validated diagnoses.
+
+Transposing the problem — clustering the 42 *items* by their pairwise response correlations across people ($d_{ij} = 1 - r_{ij}$) — tests whether items covary according to their designed subscales:
+
+```{python}
+#| label: dass-items-dendrogram
+#| fig-height: 7
+from scipy.cluster.hierarchy import dendrogram, linkage
+from scipy.spatial.distance import squareform
+
+items = dass_items()
+R_items = dass[items.item].corr().to_numpy()
+link = linkage(squareform(1 - R_items, checks=False), method="complete")
+
+scale_color = {"depression": C["blue"], "anxiety": C["orange"], "stress": C["green"]}
+fig, ax = plt.subplots(figsize=(7, 7))
+dendrogram(link, labels=items.text.tolist(), orientation="left", color_threshold=0,
+           above_threshold_color=C["muted"], ax=ax)
+for lbl in ax.get_ymajorticklabels():
+    lbl.set_color(scale_color[items.set_index("text").scale[lbl.get_text()]])
+    lbl.set_fontsize(8)
+ax.set(xlabel="merge distance (1 − r)", title="Hierarchical clustering of the 42 DASS items")
+ax.grid(False)
+plt.show()
+```
+
+Without access to the scoring key (colors identify depression, anxiety, and stress), complete-linkage clustering groups cognitive-affective depression items (*"no positive feeling"*, *"life meaningless"*), autonomic anxiety items (*"trembling"*, *"heart racing"*, *"dryness of mouth"*), and tension/irritability stress items (*"hard to wind down"*, *"touchy"*) into distinct subtrees.
+
+### Music Therapy: Affective Clusters
+
+In music cognition and music therapy, researchers ask how musical excerpts organize across emotional and regulatory states (such as soothing/anxiolytic vs. activating/energizing). [Cowen et al. (2020)](https://doi.org/10.1073/pnas.1910704117) collected ratings of $1,841$ musical excerpts across 28 affective dimensions from US and Chinese listeners (`load_music_emotions`). Below, we pass the 13 core affective dimensions to K-means and hierarchical clustering:
+
+```{python}
+#| label: music-emotions-cluster
+#| fig-height: 3.6
+from ml4hl.data import load_music_emotions
+
+emo_pkg = load_music_emotions()
+emo_df, core13 = emo_pkg["df"], emo_pkg["core13"]
+X_emo = StandardScaler().fit_transform(emo_df[core13])
+
+km_emo = KMeans(4, n_init=10, random_state=0).fit(X_emo)
+show_dims = ["calm/relaxing/serene", "dreamy", "compassionate/sympathetic",
+             "joyful/cheerful", "energizing/pump-up", "anxious/tense", "sad/depressing"]
+short_labels = [d.split("/")[0] for d in show_dims]
+emo_profiles = emo_df[show_dims].groupby(km_emo.labels_).mean()
+
+fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.6), gridspec_kw={"width_ratios": [1.35, 1]})
+for (cl, row), col in zip(emo_profiles.iterrows(), [C["blue"], C["green"], C["orange"], C["red"]]):
+    top_dim = emo_df.loc[km_emo.labels_ == cl, "top_emotion"].mode().iloc[0].split("/")[0]
+    axes[0].plot(short_labels, row.values, "o-", color=col, lw=2,
+                 label=f"cluster {cl + 1}: {top_dim} ({(km_emo.labels_ == cl).mean():.0%})")
+axes[0].set(ylabel="mean listener rating", title="Affective profiles of 1,841 musical excerpts (k = 4)")
+axes[0].tick_params(axis="x", rotation=25)
+axes[0].legend(frameon=False, fontsize=8)
+
+R_emo = emo_df[core13].corr().to_numpy()
+link_emo = linkage(squareform(np.maximum(0, 1 - R_emo), checks=False), method="complete")
+dendrogram(link_emo, labels=[c.split("/")[0] for c in core13], orientation="left",
+           color_threshold=0, above_threshold_color=C["blue"], ax=axes[1])
+axes[1].set(xlabel="Complete-linkage distance (1 − r)", title="13 core music-emotion dimensions")
+axes[1].grid(False)
+plt.tight_layout()
+```
+
+Unlike the parallel severity tiers in the DASS-42, the four musical clusters cross one another sharply, separating soothing/serene excerpts, joyful/amusing excerpts, energizing/triumphant excerpts, and anxious/fearful excerpts.
+
+### Anthropology: Kinds of Home
+
+Returning to the Dollar Street household embeddings (`emb`), we test whether unsupervised K-means ($k = 8$) groups photographs by object category (bed, stove, front door) or by socioeconomic context:
+
+```{python}
+#| label: ds-kmeans
+from sklearn.metrics import adjusted_rand_score
+
+km_ds = KMeans(8, n_init=10, random_state=0).fit(emb)
+meta["cluster"] = km_ds.labels_
+print(f"agreement with photo topics (adjusted Rand index, 1.0 = identical): {adjusted_rand_score(meta.topic, km_ds.labels_):.2f}")
+summary = (meta.groupby("cluster")
+               .agg(photos=("id", "size"), top_topic=("topic", lambda s: s.value_counts().index[0]),
+                    share=("topic", lambda s: s.value_counts(normalize=True).iloc[0]),
+                    median_income=("income", "median"))
+               .sort_values("median_income"))
+summary.style.format({"share": "{:.0%}", "median_income": "${:,.0f}"})
+```
+
+```{python}
+#| label: ds-cluster-thumbs
+#| fig-height: 4.6
+fig, axes = plt.subplots(len(summary), 8, figsize=(8, 0.95 * len(summary)))
+for r, (cl, row) in enumerate(summary.iterrows()):
+    members = np.where(meta.cluster == cl)[0]
+    shown = rng.choice(members, min(8, len(members)), replace=False)
+    for c in range(8):
+        ax = axes[r, c]; ax.set_axis_off()
+        if c < len(shown):
+            ax.imshow(thumbs[shown[c]])
+    axes[r, 0].text(-8, 24, f"${row.median_income:,.0f}", ha="right", va="center", fontsize=8)
+fig.suptitle("Eight embedding clusters sorted by median household income", fontsize=10)
+plt.show()
+```
+
+Compare the topic agreement statistic and thumbnails above. Any association between clusters and income is descriptive: photographed object, region, image composition, and material conditions may all contribute. These embeddings and clusters do not isolate a causal effect of socioeconomic conditions.
+
+:::
+
+::: {.callout-note .faster title="Going faster"}
+For tables exceeding $10^5$ rows, `MiniBatchKMeans` updates centroids on random mini-batches at a fraction of the compute cost, or `%load_ext cuml.accel` dispatches `KMeans` to a GPU. For non-spherical clusters of varying density, `sklearn.cluster.HDBSCAN` extracts stable density clusters across scales without requiring $k$ in advance.
+:::
+
+# Dimensionality Reduction: Represent Data with Fewer Coordinates
+
+Empirical datasets routinely span dozens to hundreds of measurements per observation: 42 questionnaire items, 28 affective ratings, 101 acoustic features, or 768 embedding coordinates. **Dimensionality reduction** maps high-dimensional observations into a low-dimensional subspace while preserving as much variance or neighborhood structure as possible — enabling visualization, denoising, and latent-factor discovery.
+
+## Sneak Peek: an Autoencoder Squeezes, Then Rebuilds
+
+An **autoencoder** is a neural network trained to reconstruct its own input $x$ after passing activations through a narrow intermediate layer (**bottleneck**) of width $k \ll d$. Compressing a 64-pixel image into a 3-number bottleneck encourages a compact representation useful for reconstruction, without guaranteeing recovery of the underlying generative factors.
+
+```{python}
+#| label: w-autoencoder
+#| echo: false
+show("autoencoder")
+```
+
+Each synthetic image in Figure 12 is a 2D Gaussian spot that varies in horizontal position, vertical position, and radius. Press **train**: the reconstructions in the bottom row rapidly converge toward the inputs, and the 2D latent scatter on the right organizes smoothly by horizontal position (color). Drag the latent-code sliders to decode new synthetic images directly from the bottleneck coordinates. Reducing the bottleneck width to $1$ restricts reconstruction to a single curve, while widening it to $16$ lowers reconstruction error at the expense of a less compact code.
+
+Because the target output is the input itself ($y = x$), an autoencoder is a canonical example of **self-supervised learning**. Below, we run the same architecture on $8 \times 8$ handwritten digit images:
+
+```{python}
+#| label: w-autoencoder-digits
+from ml4hl.samples import digits_images
+
+show("autoencoder", data=digits_images(n=300), bottleneck=4)
+```
+
+## Projections: PCA and Random
+
+A linear **projection** reduces dimensionality by taking the dot product of each point with a set of basis directions (recording each point's orthogonal shadow onto a line or plane).
+
+```{python}
+#| label: w-projection
+#| echo: false
+show("projection")
+```
+
+Drag the projection axis in Figure 13 to rotate the projection direction. Each point projects onto its orthogonal shadow along the line, and the right-hand curve plots the fraction of total variance retained at every angle. For centered data, the direction that maximizes retained variance (and equivalently minimizes the sum of squared perpendicular reconstruction errors) is the **first principal component** (PC1). Subsequent principal components maximize variance subject to being mutually orthogonal. That orthogonal variance-maximizing basis defines **principal component analysis** (PCA).
+
+Switch to the **random projection** tab. The Johnson–Lindenstrauss lemma gives probabilistic distance-preservation guarantees for a finite set of points when the target dimension is sufficiently large relative to the logarithm of the number of points and the desired error tolerance. Random projection directions need not be orthogonal. The widget illustrates empirical distance correlation; this is weaker than checking the theorem’s bound for every pair.
+
+To inspect how keeping $k$ principal components reconstructs individual multi-feature profiles and how the eigenvalue **scree plot** distributes total variance across components, explore the `pca_reconstruct` widget below on the 13 core music-emotion dimensions:
+
+```{python}
+#| label: w-pca-reconstruct
+show("pca_reconstruct", data=dict(
+    X=StandardScaler().fit_transform(emo_df[core13].sample(120, random_state=7).to_numpy()),
+    feature_names=[c.split("/")[0] for c in core13],
+))
+```
+
+::: {.callout-tip .takeaway title="Takeaway #7"}
+High-dimensional measurements often lie near a lower-dimensional subspace. Dimensionality reduction isolates the directions that capture the dominant variance or structure.
+:::
+
+## Applied Examples
+
+::: {.panel-tabset}
+
+### Psychology: Rediscovering the Scales
+
+The DASS-42 contains 42 items designed around three clinical scales. Fitting PCA to the standardized $42$-item response matrix reveals how variance is distributed across orthogonal axes:
+
+```{python}
+#| label: dass-pca
+#| fig-height: 3.6
+from sklearn.decomposition import PCA, FactorAnalysis
+
+Zi = StandardScaler().fit_transform(dass[items.item])
+pca_d = PCA().fit(Zi)
+
+fig, ax = plt.subplots(figsize=(6.5, 3.4))
+ax.bar(range(1, 16), pca_d.explained_variance_ratio_[:15], color=C["blue"])
+ax.set(xlabel="principal component", ylabel="proportion of variance explained",
+       title="DASS-42 scree plot: dominant general distress axis")
+plt.show()
+print(f"PC1 explains {pca_d.explained_variance_ratio_[0]:.0%} of total variance across the 42 items")
+```
+
+The printed value reports the variance explained by PC1 for this sample. PCA does not require all loadings to be positive, and component signs are arbitrary. Factor analysis instead models shared covariance and feature-specific noise. Varimax rotates the fitted factors toward a simpler loading pattern; it does not guarantee recovery of the intended questionnaire scales.
+
+```{python}
+#| label: dass-fa
+#| fig-height: 7.4
+fa = FactorAnalysis(n_components=3, rotation="varimax", random_state=0).fit(Zi)
+loadings = pd.DataFrame(fa.components_.T, index=items.text, columns=["factor 1", "factor 2", "factor 3"])
+order_items = items.sort_values("scale").text
+
+fig, ax = plt.subplots(figsize=(5.2, 7.4))
+sns.heatmap(loadings.loc[order_items].abs(), cmap="Blues", cbar_kws={"label": "|factor loading|"}, ax=ax)
+for lbl in ax.get_yticklabels():
+    lbl.set_color(scale_color[items.set_index("text").scale[lbl.get_text()]]); lbl.set_fontsize(7.5)
+ax.set(ylabel=None, title="Varimax-rotated factor loadings across the 42 DASS items")
+plt.show()
+
+match = adjusted_rand_score(items.scale, loadings.abs().to_numpy().argmax(axis=1))
+print(f"agreement between dominant factor loading and designed DASS scale (adjusted Rand): {match:.2f}")
+```
+
+### Music Therapy: 13 Dimensions of Musical Emotion
+
+How many independent dimensions are needed to capture listeners' emotional responses across the 28 affective scales in `load_music_emotions`? Below we compute the PCA eigenvalue spectrum across all 28 affective dimensions and inspect a 3-factor varimax rotation:
+
+```{python}
+#| label: music-emotions-pca
+#| fig-height: 3.6
+emo_dims = emo_pkg["dimensions"]
+Z_emo28 = StandardScaler().fit_transform(emo_df[emo_dims])
+pca_emo = PCA().fit(Z_emo28)
+cum_var = np.cumsum(pca_emo.explained_variance_ratio_)
+
+fa_emo = FactorAnalysis(n_components=3, rotation="varimax", random_state=0).fit(Z_emo28)
+fa_df = pd.DataFrame(fa_emo.components_.T, index=[d.split("/")[0] for d in emo_dims],
+                     columns=["Factor 1", "Factor 2", "Factor 3"])
+
+fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.6), gridspec_kw={"width_ratios": [1, 1.3]})
+axes[0].bar(range(1, 16), pca_emo.explained_variance_ratio_[:15], color=C["blue"], label="per component")
+axes[0].plot(range(1, 16), cum_var[:15], "o-", color=C["orange"], lw=1.8, label="cumulative")
+axes[0].axhline(0.90, ls="--", color=C["muted"], lw=1)
+axes[0].set(xlabel="number of components", ylabel="variance explained", title="28 music-emotion ratings: scree & cumulative variance")
+axes[0].legend(frameon=False, fontsize=8)
+
+top_idx = np.unique(np.argsort(- np.abs(fa_emo.components_), axis=1)[:, :4].ravel())
+sns.heatmap(fa_df.iloc[top_idx], cmap="RdBu_r", center=0, vmin=-0.9, vmax=0.9, ax=axes[1], cbar_kws={"label": "rotated loading"})
+axes[1].set_title("Top loadings on the first 3 rotated affective factors")
+plt.tight_layout()
+print(f"First 3 components explain {cum_var[2]:.0%} of variance; 13 components explain {cum_var[12]:.0%}")
+```
+
+Use the printed cumulative variance and the loading matrix to assess this sample. Factor labels require inspection of the loadings; factor order and sign are arbitrary. The dimensionality claim in Cowen et al. (2020) comes from their broader analysis and is not established by this illustrative three-factor model or a PCA variance cutoff.
+
+### Biology: the Shape of a Finch's Vocabulary
+
+```{python}
+#| label: finch-pca
+#| fig-height: 4.4
+Zf = StandardScaler().fit_transform(ffeats)
+pca_f = PCA(n_components=10).fit(Zf)
+pcs = pca_f.transform(Zf)
+
+fig, ax = plt.subplots(figsize=(7, 4.4))
+sns.scatterplot(x=pcs[:, 0], y=pcs[:, 1], hue=fmeta.calltype, s=10, alpha=0.6, ax=ax, palette=ml4hl.PALETTE[:len(types)])
+ax.set(xlabel=f"PC1 ({pca_f.explained_variance_ratio_[0]:.0%} of variance)",
+       ylabel=f"PC2 ({pca_f.explained_variance_ratio_[1]:.0%})", title="101 zebra finch acoustic features projected onto PC1–PC2")
+ax.legend(frameon=False, fontsize=8, markerscale=2, bbox_to_anchor=(1, 1))
+plt.show()
+print(f"10 principal components retain {pca_f.explained_variance_ratio_.sum():.0%} of variance across 101 acoustic features")
+```
+
+Projecting from 101 acoustic features down to two principal components separates loud, harmonic vocalizations (song, distance, long tonal calls) from short, broadband contact calls. Passing these 101-dimensional vectors into the `projection` widget illustrates random-projection distance preservation on real bioacoustic measurements:
+
+```{python}
+#| label: w-projection-finch
+codes = fmeta.calltype.astype("category").cat.codes.to_numpy()
+keep = rng.choice(len(Zf), 220, replace=False)
+show("projection", data=dict(X2=pcs[keep, :2] * np.array([1, -1]), Xhigh=Zf[keep], labels=codes[keep]), mode="random")
+```
+
+:::
+
+::: {.callout-note .faster title="Going faster"}
+To visualize curved manifolds in 2D, neighborhood-graph methods such as **UMAP** (`pip install umap-learn`, `umap.UMAP().fit_transform(X)`) and `sklearn.manifold.TSNE` preserve local k-nearest-neighbor topology at the cost of distorting global Euclidean distances between separated clusters. For out-of-core datasets, `IncrementalPCA` fits PCA in streaming mini-batches, and `cuml.accel` accelerates `PCA`, `UMAP`, and `TSNE` on GPU.
+:::
+
+# Representational Similarity Analysis: Compare Two Minds
+
+Suppose two systems respond to the same set of $N$ stimuli: a cortical region and a deep neural network, American and Chinese music listeners, or human behavioral judgments and a language model's embeddings. Their internal measurements have different dimensionalities and units ($d_A \neq d_B$), so individual features cannot be aligned one-to-one. How can we quantify whether the two systems organize the stimuli according to the same geometry?
+
+**Representational similarity analysis** (RSA) compares systems through their second-order **relational geometry**. Within each system, compute the dissimilarity between every pair of stimuli $(i, j)$ to form an $N \times N$ **representational dissimilarity matrix** (RDM). Because both RDMs have identical dimensions ($N \times N$) regardless of the original feature counts $d_A$ and $d_B$, we can extract the $N(N-1)/2$ unique pairs in the upper triangle of each RDM and compute their rank correlation (Spearman's $\rho$).
+
+## Building and Comparing RDMs
+
+```{python}
+#| label: w-rdm-builder
+#| echo: false
+show("rdm_builder")
+```
+
+Figure 14 displays two $24 \times 24$ RDMs computed from a synthetic 8-feature system $A$ and a 12-feature system $B$ responding to the same 24 stimuli across 4 categories (see also `rsa_pipeline` in the optional local widget gallery for an explicit 4-stage view of the feature-to-RDM-to-upper-triangle pipeline). Light entries mark similar stimulus pairs; dark entries mark dissimilar pairs. The right panel plots the 276 upper-triangle pairs from $\text{RDM}_A$ against $\text{RDM}_B$ and reports their Spearman rank correlation $\rho$:
+
+- **Hover** any matrix cell to highlight the corresponding stimulus pair $(i, j)$ in both RDMs and in the pairwise scatter plot.
+- **Permute the stimulus order** (`shuffled`): the visual block structure disappears because rows and columns are re-indexed, but every pair $(i, j)$ retains its values in both matrices, leaving Spearman's $\rho$ invariant.
+- Increase **noise in B** to degrade representational alignment, and click **shuffle test** to build a permutation null distribution by randomly permuting stimulus labels $500$ times.
+
+::: {.callout-tip .takeaway title="Takeaway #8"}
+To compare two systems with different feature spaces, compare their pairwise representational dissimilarity matrices (RDMs).
+:::
+
+## Applied: do models judge similarity like people?
+
+The [THINGS](https://things-initiative.org) initiative collected 4.7 million human odd-one-out triplet judgments across 1,854 everyday object concepts. From those behavioral choices, [Hebart et al. (2020)](https://doi.org/10.1038/s41562-020-00951-3) estimated a 66-dimensional embedding (**SPoSE**) whose axes correspond to interpretable semantic and perceptual dimensions (animacy, edibility, metallic texture, tool use). Below, we use RSA to compare human SPoSE representations against 768-dimensional text embeddings from SigLIP 2:
+
+```{python}
+#| label: things-load
+from ml4hl.data import load_things
+
+things = load_things()
+tmeta, spose, model_emb = things["meta"], things["spose"].astype(float), things["model"].astype(float)
+print(f"{len(tmeta)} concepts · human space: {spose.shape[1]} dims · model space: {model_emb.shape[1]} dims ({things['model_name']})")
+tmeta.category.value_counts().head(8)
+```
+
+We first construct correlation-distance RDMs for a balanced subset of 96 concepts (12 concepts across 8 superordinate categories) using `rsatoolbox`:
+
+```{python}
+#| label: things-rsatoolbox
+#| fig-height: 4.4
+import rsatoolbox
+from scipy.stats import rankdata
+
+cats = [c for c in tmeta.category.value_counts().index if c != "other"][:8]
+sub = pd.concat([tmeta[tmeta.category == category].head(12) for category in cats])
+assert len(sub) == 12 * len(cats)
+assert sub.index.is_unique
+idx = sub.index.to_numpy()
+
+def rsa_dataset(X, label):
+    return rsatoolbox.data.Dataset(X[idx], descriptors={"system": label},
+                                   obs_descriptors={"concept": sub.concept.tolist(), "category": sub.category.tolist()})
+
+rdm_human = rsatoolbox.rdm.calc_rdm(rsa_dataset(spose, "human (SPoSE)"), method="correlation")
+rdm_model = rsatoolbox.rdm.calc_rdm(rsa_dataset(model_emb, "SigLIP 2 text"), method="correlation")
+
+fig, axes = plt.subplots(1, 2, figsize=(9, 4.4))
+for ax, rdm, title in zip(axes, [rdm_human, rdm_model], ["Human similarity (SPoSE)", "Model (SigLIP 2 text)"]):
+    mat = rdm.get_matrices()[0]
+    ranked = rankdata(mat).reshape(mat.shape)   # rank-transform for visual contrast
+    ax.imshow(ranked, cmap="Blues", interpolation="nearest")
+    ticks = np.arange(6, len(idx), 12)
+    ax.set_xticks(ticks, cats, rotation=60, ha="right", fontsize=8); ax.set_yticks(ticks, cats, fontsize=8)
+    ax.set_title(title); ax.grid(False)
+plt.tight_layout()
+
+rho = rsatoolbox.rdm.compare(rdm_human, rdm_model, method="spearman")[0, 0]
+print(f"Spearman ρ between human and model RDMs: {rho:.2f}")
+```
+
+Inspect the within-category blocks along the diagonal and compare them with between-category pairs in each RDM. Passing a 24-concept subset into `rdm_builder` lets you inspect individual concept pairs directly:
+
+```{python}
+#| label: w-rdm-things
+small = tmeta[tmeta.category.isin(cats[:4])].groupby("category").head(6).sort_values("category")
+show("rdm_builder", data=dict(
+    names=small.concept.tolist(), groups=small.category.tolist(),
+    A=spose[small.index], B=model_emb[small.index],
+    labelA="human similarity (SPoSE)", labelB="SigLIP 2 text"))
+```
+
+To benchmark the observed $\rho$, we compare it against (1) a **label-permutation null distribution** (1,000 random permutations of the rows and columns of $\text{RDM}_{\text{model}}$) and (2) a binary **categorical model RDM** ($d_{ij} = 0$ if concepts $i, j$ share a category and $1$ otherwise):
+
+```{python}
+#| label: things-permutation
+#| fig-height: 3
+from scipy.spatial.distance import pdist, squareform
+from scipy.stats import spearmanr, rankdata
+
+d_human = pdist(spose[idx], "correlation")
+d_model = pdist(model_emb[idx], "correlation")
+d_category = pdist(sub.category.astype("category").cat.codes.to_numpy()[:, None], lambda u, v: float(u[0] != v[0]))
+
+M_model = squareform(rankdata(d_model))
+iu = np.triu_indices(len(idx), 1)
+r_human = rankdata(d_human)
+null = []
+for _ in range(1000):
+    p = rng.permutation(len(idx))
+    null.append(np.corrcoef(r_human, M_model[np.ix_(p, p)][iu])[0, 1])
+null = np.array(null)
+
+fig, ax = plt.subplots(figsize=(6.5, 3))
+ax.hist(null, bins=40, color=C["muted"], alpha=0.7)
+ax.axvline(rho, color=C["red"], lw=2)
+ax.set(xlabel="Spearman ρ under permuted concept labels", ylabel="count", title="1,000 label permutations vs observed RDM alignment")
+plt.show()
+rsa_p = (1 + np.count_nonzero(null >= rho)) / (len(null) + 1)
+print(f"One-sided Monte Carlo permutation p = {rsa_p:.4f} (1,000 permutations; minimum attainable = {1/(len(null)+1):.4f})")
+print(f"categorical RDM vs human: ρ = {spearmanr(d_category, d_human)[0]:.2f} · categorical RDM vs SigLIP: ρ = {spearmanr(d_category, d_model)[0]:.2f}")
+```
+
+Finally, we compute the second-order correlation across all $1,854$ concepts ($\binom{1854}{2} = 1,717,731$ unique pairs) directly with `scipy.spatial.distance.pdist`:
+
+```{python}
+#| label: things-full
+rho_full = spearmanr(pdist(spose, "correlation"), pdist(model_emb, "correlation"))[0]
+print(f"All {len(tmeta):,} concepts ({len(tmeta) * (len(tmeta) - 1) // 2:,} pairs): Spearman ρ = {rho_full:.2f}")
+```
+
+Across the full lexicon, including concepts without a single dominant category, the printed rank correlation measures correspondence between the two dissimilarity structures. It is not a fraction of variance explained or evidence of identical representations. This motivates multimodal comparisons against vision and audio-visual foundation models (such as [TIPSv2](https://huggingface.co/google/tipsv2-b14)).
+
+# Cross-Validation: Evaluate Generalization
+
+The applied predictive examples report held-out performance; schematic widgets also display training fit and exploratory scores. This section examines why training-set performance is biased, how cross-validation estimates out-of-sample generalization, and how clustered sampling structures cause data leakage when folds are split naively.
+
+## Training and Generalization
+
+```{python}
+#| label: w-overfitting
+#| echo: false
+show("overfitting")
+```
+
+In Figure 15, filled circles mark **training** observations and hollow rings mark **held-out test** observations drawn from the same data-generating curve. Increase the polynomial degree slider from $1$ to $15$. Increasing polynomial degree can reduce training error while making the fitted curve sensitive to noise. Held-out error may then rise; the best degree varies with the sample, and finite precision and regularization can affect the training curve. A growing gap between training and held-out performance is evidence of **overfitting**. Treat a split used to choose degree as validation data and reserve a separate test set for final evaluation. Click **new sample** repeatedly to observe how high-degree fits fluctuate wildly across samples while low-degree fits remain stable around the true function.
+
+::: {.callout-tip .takeaway title="Takeaway #9"}
+Training error measures fit to the observed sample. Evaluate generalization on data excluded from fitting and model selection.
+:::
+
+## Cross-Validation and Group Leakage
+
+Rather than relying on a single train/test split, **$k$-fold cross-validation** partitions the dataset into $k$ folds, approximately equal-sized when constraints permit, fits the model on $k - 1$ folds, evaluates on the held-out fold, and averages test performance across all $k$ rotations.
+
+Random observation-level folds estimate performance on new observations drawn under a similar sampling process. Repeated observations from participants, vocalists, societies, birds, or households can share information. To estimate performance on new sampling units, hold those units out together. Grouped folds do not by themselves establish independence or generalization to every new population.
+
+```{python}
+#| label: w-cv-folds
+#| echo: false
+show("cv_folds")
+```
+
+In Figure 16, each column represents one observation colored by its group (e.g., participant or household), and each row represents one cross-validation fold (the legend identifies train and test). In the scatter panel, segments connect each test point to its nearest training neighbor whenever both belong to the same group. Under standard `kfold` or `stratified` splitting, groupmates appear in both train and test sets simultaneously, allowing a nearest-neighbor classifier to match group-specific offsets and substantially overestimate out-of-sample accuracy (solid accuracy line versus the dashed out-of-group baseline).
+
+Switch the scheme to **group** (`GroupKFold`): every group is assigned intact to a single fold, the within-group red links vanish, and the estimate targets unseen-group performance under the simulated sampling process. Its uncertainty and applicability still depend on the sampled groups.
+
+::: {.callout-tip .takeaway title="Takeaway #10"}
+Split cross-validation folds along the sampling unit you intend to generalize across: by participant, by vocalist, by bird, or by household.
+:::
+
+## How Sure Are You? Resampling
+
+Any sample statistic or cross-validated score carries sampling uncertainty. **Resampling** methods quantify that uncertainty directly from the empirical sample without assuming parametric formulas:
+
+- **The bootstrap** draws $B$ resamples of size $n$ *with replacement* from each group and recomputes the statistic on every resample; the central 95% gives an approximate percentile **confidence interval**, whose coverage depends on sampling and regularity assumptions. Resample independent sampling units; repeated or clustered observations require a suitable cluster or block bootstrap.
+- **A permutation test** evaluates the null hypothesis of exchangeability by pooling observations, randomly shuffling group labels across $B$ iterations, and computing a Monte Carlo **$p$-value** as $(1 + b)/(B + 1)$, where $b$ shuffled statistics are at least as extreme as the observed effect. Use exchangeability restrictions appropriate to the design; this does not give the probability that the null hypothesis is true.
+
+Below, we pass age-8 CBCL externalizing scores from low versus high teaching-composite groups (`perinatal_attention_groups` from the longitudinal IHDP dataset) directly into the `resampling` widget:
+
+```{python}
+#| label: w-resampling
+from ml4hl.samples import perinatal_attention_groups
+
+show("resampling", data=perinatal_attention_groups(n_per_group=32))
+```
+
+For a comprehensive walkthrough of bootstrap confidence intervals, permutation tests, and cross-validation designs, see the companion tutorial, [Bootstrapping, Permutation, and Cross-Validation](https://colinconwell.com/Tutorials/tutorials/boot-permute-cv/).
+
+## Applied: Group Leakage in Zebra Finch Vocalizations
+
+To quantify group leakage on real bioacoustic recordings, we evaluate two classifiers on the zebra finch repertoire under both call-level `StratifiedKFold` (which mixes recordings from the same bird across train and test folds) and bird-level `GroupKFold`:
+
+```{python}
+#| label: finch-leakage
+#| fig-height: 3
+from sklearn.model_selection import StratifiedKFold, permutation_test_score
+from sklearn.neighbors import KNeighborsClassifier
+
+leak_models = {
+    "1-nearest neighbor": make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=1)),
+    "logistic regression": make_pipeline(StandardScaler(), LogisticRegression(max_iter=3000)),
+}
+schemes = {"stratified k-fold (calls)": StratifiedKFold(5, shuffle=True, random_state=0),
+           "group k-fold (birds)": finch_cv}
+leak = pd.DataFrame([
+    dict(model=m, scheme=s, accuracy=cross_val_score(mdl, ffeats, fmeta.calltype, groups=fmeta.bird, cv=cv, n_jobs=N_JOBS).mean())
+    for m, mdl in leak_models.items() for s, cv in schemes.items()])
+
+fig, ax = plt.subplots(figsize=(7, 2.8))
+sns.barplot(leak, y="model", x="accuracy", hue="scheme", palette=[C["red"], C["blue"]], ax=ax)
+ax.set(xlim=(0, 1), ylabel=None, title="Call-level vs bird-level cross-validation on identical data")
+ax.legend(frameon=False, fontsize=8, loc="lower right")
+plt.show()
+leak.pivot(index="model", columns="scheme", values="accuracy").style.format("{:.0%}")
+```
+
+Compare the call-level and bird-level scores above. Bird identity is a plausible source of dependence, which we examine by predicting individual identity from acoustic features:
+
+```{python}
+#| label: finch-bird-id
+bird_acc = cross_val_score(leak_models["logistic regression"], ffeats, fmeta.bird,
+                           cv=StratifiedKFold(5, shuffle=True, random_state=0), n_jobs=N_JOBS).mean()
+print(f"Individual bird identification from a single call: {bird_acc:.0%} accuracy (uniform-guess reference = {1 / fmeta.bird.nunique():.1%})")
+```
+
+Differences between the two split schemes are consistent with sensitivity to bird-specific structure, but the comparison alone does not identify its causal contribution. The permutation test below shuffles call-type labels within each bird while keeping bird-level folds. This tests a conditional null that preserves each bird’s label composition and assumes calls are exchangeable within bird; recording-session dependence can violate that assumption.
+
+```{python}
+#| label: finch-permutation
+#| fig-height: 3
+score, perm_scores, pval = permutation_test_score(
+    leak_models["logistic regression"], ffeats, fmeta.calltype, groups=fmeta.bird,
+    cv=finch_cv, n_permutations=100, n_jobs=N_JOBS, random_state=0)
+
+fig, ax = plt.subplots(figsize=(6.5, 3))
+ax.hist(perm_scores, bins=20, color=C["muted"], alpha=0.7, label="permuted call-type labels")
+ax.axvline(score, color=C["red"], lw=2, label="observed grouped accuracy")
+ax.set(xlabel="grouped cross-validated accuracy", ylabel="count", xlim=(0, 1))
+ax.legend(frameon=False)
+plt.show()
+print(f"observed: {score:.0%} · max permutation: {perm_scores.max():.0%} · p = {pval:.3f} (100 permutations)")
+```
+
+::: {.callout-note .faster title="Going faster"}
+`cross_val_score`, `cross_val_predict`, and `permutation_test_score` accept `n_jobs=-1` to parallelize folds across all CPU cores. For hyperparameter tuning across large grids, `HalvingGridSearchCV` allocates compute via successive halving, and [Optuna](https://optuna.org) performs Bayesian hyperparameter optimization.
+:::
+
+# Wrapping Up
+
+## The Ten Takeaways
+
+1. Learning uses experience to shape a model; held-out evaluation tests whether that model generalizes.
+2. Many learning methods optimize an objective, but a global optimum is not guaranteed and need not give the best generalization.
+3. A model is a parameterized family of functions. Training adjusts the parameters to minimize error.
+4. Spline regression combines basis functions to model curvature. A one-dimensional ReLU network represents a continuous piecewise-linear function whose breakpoints can be learned.
+5. A classifier is a boundary in feature space. The geometry of the category manifolds determines which boundary families can separate them.
+6. Clustering partitions data according to a geometric assumption (touching neighborhoods, spherical centers, or hierarchical linkage), even when the underlying distribution is a single continuum.
+7. High-dimensional measurements often lie near a lower-dimensional subspace. Dimensionality reduction isolates the directions that capture the dominant variance or structure.
+8. To compare two systems with different feature spaces, compare their pairwise representational dissimilarity matrices (RDMs).
+9. Training error measures fit to the observed sample. Evaluate generalization on data excluded from fitting and model selection.
+10. Split cross-validation folds along the sampling unit you intend to generalize across: by participant, by vocalist, by bird, or by household.
+
+## The Whole Toolkit on One Page
+
+The following template applies to supervised prediction with grouped cross-validation:
+
+```python
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GroupKFold, cross_val_score
+
+model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))     # 1. specify pipeline
+cv = GroupKFold(5, shuffle=True, random_state=0)                              # 2. split by sampling unit
+scores = cross_val_score(model, X, y, groups=participant_ids, cv=cv)          # 3. fit and evaluate per fold
+print(scores.mean())                                                          # 4. report held-out score
+```
+
+| Goal | Start with | Upgrade to |
+|---|---|---|
+| predict a number (linear or curved) | `LinearRegression`, `RidgeCV`, `SplineTransformer` | `HistGradientBoostingRegressor` |
+| predict a category | `LogisticRegression` | `HistGradientBoostingClassifier`, XGBoost, LightGBM |
+| discover groups | `KMeans`, `AgglomerativeClustering` | `HDBSCAN`, `GaussianMixture` |
+| reduce dimensions | `PCA`, `FactorAnalysis` | UMAP, t-SNE (neighborhood visualization) |
+| compare representations | `scipy.spatial.distance.pdist` + `spearmanr` | `rsatoolbox` |
+| evaluate generalization & uncertainty | `cross_val_score` with `GroupKFold` | `permutation_test_score`, bootstrap CIs |
+
+::: {.callout-note .faster title="Going faster: summary"}
+**Accelerating the same API.** Pass `n_jobs=-1` to parallelize cross-validation and resampling across CPU cores. On an NVIDIA GPU (including Google Colab's GPU runtime), `%load_ext cuml.accel` dispatches supported `scikit-learn` estimators to the GPU without code modifications, and `import sklearnex; sklearnex.patch_sklearn()` accelerates CPU execution on Intel hardware. For large tabular workflows, [Polars](https://pola.rs) and [Ibis](https://ibis-project.org) provide high-throughput dataframe engines.
+:::
+
+## Glossary
+
+Bottleneck
+: A narrow intermediate layer in an autoencoder that forces the network to compress high-dimensional inputs into a low-dimensional latent code.
+
+Classification
+: Supervised prediction of a discrete categorical label.
+
+Cross-validation
+: Partitioning data into $k$ folds so every observation is evaluated once while held out from training.
+
+Feature
+: A single measured variable or coordinate describing an observation (e.g., an acoustic parameter, survey indicator, or embedding dimension).
+
+Gradient descent
+: Iterative optimization that updates model parameters in the direction of steepest decrease of the loss function.
+
+Group k-fold
+: Cross-validation scheme that keeps all observations from the same sampling unit (participant, vocalist, bird, household) within the same fold.
+
+Learning rate
+: Scalar step size multiplying the gradient during parameter updates.
+
+Overfitting
+: Fitting sample-specific noise in the training data, reducing accuracy on unseen test observations.
+
+Principal component
+: Orthogonal axis capturing the maximum remaining variance in a dataset.
+
+RDM
+: Representational dissimilarity matrix: an $N \times N$ symmetric matrix recording pairwise distances between $N$ stimuli within a system.
+
+Regression
+: Supervised prediction of a continuous numerical outcome.
+
+ReLU (rectified linear unit)
+: Piecewise-linear hinge activation $\max(0, z)$ that stays zero below a knot threshold and rises linearly above it.
+
+Self-supervised learning
+: Training a model to predict part of the data from itself (such as reconstructing inputs through an autoencoder bottleneck) without external labels.
+
+Spline / knot
+: A piecewise polynomial curve joined smoothly at landmark points (**knots**) along the input axis.
+
+Supervised / unsupervised
+: Learning with (`supervised`) or without (`unsupervised`) an explicit target variable $y$.
+
+Weights
+: Learnable parameters inside a model adjusted during training to minimize loss.
+
+## Data Sources
+
+All datasets used in this tutorial are publicly available. Please cite the primary publications when using them in research.
+
+| Dataset | Domain | Primary source |
+|---|---|---|
+| World Bank LSMS household health & expenditure (`load_household_survey`) | anthropology, health economics | World Bank Living Standards Measurement Study; Cameron & Trivedi (2005) |
+| Dollar Street household photos & incomes (`load_dollar_street`) | anthropology | [Gapminder Dollar Street](https://www.gapminder.org/dollar-street) (CC BY 4.0), via [`iamshnoo/dollarstreet`](https://huggingface.co/datasets/iamshnoo/dollarstreet) |
+| Stanford Wordbank MB-CDI vocabulary (`load_wordbank`) | child development, language acquisition | Frank et al. (2017, 2021), [Wordbank](https://wordbank.stanford.edu) MacArthur-Bates CDI repository |
+| IHDP perinatal risk, language, reading & attention (`load_perinatal_dev`) | developmental & clinical psychology | Brooks-Gunn et al. (1992); Infant Health and Development Program longitudinal cohort |
+| DASS-42 symptom inventory (`load_dass`) | clinical psychology | Lovibond & Lovibond (1995); [Open-Source Psychometrics Project](https://openpsychometrics.org/_rawdata/) |
+| The Music Lab NHS & infant-directed vocalizations (`load_musiclab`) | music therapy, child dev, anthropology | Mehr et al. (2019), *Science*; Hilton et al. (2022), *Nature Human Behaviour* ([The Music Lab](https://themusiclab.org)) |
+| 13-Dimensions of Music Emotion (`load_music_emotions`) | music therapy, affective science | Cowen et al. (2020), *PNAS*, via [`baobaoh/13-dimensions-music-emotions`](https://huggingface.co/datasets/baobaoh/13-dimensions-music-emotions) |
+| THINGS concepts & SPoSE human similarity (`load_things`) | cognitive science, perception | Hebart et al. (2020), *Nature Human Behaviour* ([THINGS initiative](https://things-initiative.org)) |
+| Zebra finch vocal repertoire (`load_finch`) | organismal & perceptual biology | Elie & Theunissen (2016), *Animal Cognition*, via [`cgeorgiaw/animal-sounds`](https://huggingface.co/datasets/cgeorgiaw/animal-sounds) |
+| Wisconsin breast biopsy & PneumoniaMNIST | clinical medicine | [UCI ML Repository](https://archive.ics.uci.edu/dataset/17); Yang et al. (2023), *Scientific Data* ([MedMNIST v2](https://medmnist.com)) |
+
+Image and text embeddings were computed with [SigLIP 2](https://huggingface.co/google/siglip2-base-patch16-224). Precomputed artifacts and the `ml4hl` package are hosted on the [`colinconwell/ml4hl`](https://huggingface.co/datasets/colinconwell/ml4hl) Hugging Face dataset repository and can be rebuilt from source via `scripts/build_artifacts.py`.
+
+## Coming Up in Part 2
+
+Several models introduced above — the hinge basis of splines, the linear perceptron, the autoencoder bottleneck, the raw-pixel chest X-ray classifier, and the pretrained SigLIP 2 embeddings — form the building blocks of deep neural networks. Part 2 examines how stacking layers of learnable hinges and attention heads allows networks to learn hierarchical representations directly from raw images, audio waveforms, and text, and how to adapt pretrained foundation models to domain-specific research datasets.
