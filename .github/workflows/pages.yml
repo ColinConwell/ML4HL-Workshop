@@ -68,6 +68,8 @@ jobs:
           # These paths contain preinstalled SDKs on this disposable hosted runner only.
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift /usr/local/share/boost /usr/local/lib/powershell /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk /opt/hostedtoolcache/go /opt/hostedtoolcache/Ruby /opt/hostedtoolcache/PyPy
           sudo rm -rf /usr/share/miniconda /usr/local/share/vcpkg /home/linuxbrew /home/runner/.rustup /home/runner/.cargo /opt/az /opt/microsoft /usr/local/share/powershell /usr/lib/jvm
+          sudo rm -rf /usr/local/julia* /usr/share/az_* /usr/local/aws-cli /usr/local/aws-sam-cli /opt/pipx /opt/google /usr/lib/llvm-16 /usr/lib/llvm-17 /usr/lib/llvm-18
+          sudo apt-get clean
           ML4HL_KEEP_PYTHON=$(python -c 'import sys; print(sys.base_prefix)')
           sudo env ML4HL_KEEP_PYTHON="$ML4HL_KEEP_PYTHON" python3 - <<'PYTHON'
           import os, shutil

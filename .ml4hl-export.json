@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "files": {
-    ".github/workflows/pages.yml": "77fa7914e8f9362a952a977a5c7477301549a5c2598ca5a424767806780ff8ad",
+    ".github/workflows/pages.yml": "850c9d97f10b38a18dba2a8db2a79e20ceb8c6307156878feb05956c3350da54",
     ".gitignore": "f8d94e3ab50762f93fbdbd91ecf2f9ae6ef14dfbd46428111d9456d9e6d855c4",
     "AGENTS.md": "55847ab7d3f7ca6cf6e3d586e9984d83def679951f936bbe13814fdcc6fe3e77",
     "JUSTFile": "3dbe409f6bd5d14be600d72f2406716800e95293d8d56bf6ed723b59597bb08b",
