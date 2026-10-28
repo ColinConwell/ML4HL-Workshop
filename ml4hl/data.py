@@ -46,10 +46,7 @@ def artifact(name: str, artifacts=None) -> Path:
 
 
 def artifact_manifest(artifacts=None) -> dict:
-    try:
-        return json.loads(artifact("manifest.json", artifacts).read_text())
-    except Exception:
-        return {}
+    return json.loads(artifact("manifest.json", artifacts).read_text())
 
 
 def _download(url: str, dest: Path) -> Path:
@@ -70,12 +67,12 @@ def _try_artifact(name: str, artifacts=None) -> Path | None:
     for d in _local_dirs(artifacts):
         if (d / name).exists():
             return d / name
+    from huggingface_hub import hf_hub_download
+    from huggingface_hub.errors import EntryNotFoundError
     try:
-        from huggingface_hub import hf_hub_download
-
         return Path(hf_hub_download(HF_REPO, f"artifacts/{name}", repo_type="dataset", revision=HF_REVISION))
-    except Exception:
-        return None
+    except EntryNotFoundError:
+        return None  # Only an absent optional artifact permits its documented raw-data fallback.
 
 
 # ─── Precomputed artifacts ──────────────────────────────────────────────
