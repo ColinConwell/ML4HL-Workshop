@@ -30,6 +30,17 @@ for X, result in zip(cases,actual['pca']):
  np.testing.assert_allclose(result['values'][:2],reference.explained_variance_,atol=1e-8)
  A=np.array(result['components']);B=reference.components_
  np.testing.assert_allclose(A.T@A,B.T@B,atol=1e-8)
+# Evaluate the widget's own Newton solver and gradient against sklearn/finite differences.
+X=rng.normal(size=(90,2));labels=(X[:,0]-.7*X[:,1]+rng.normal(size=90)>.1).astype(int)
+widget=(ROOT/'ml4hl/assets/widgets/logistic_gd.js').read_text()
+prefix=widget.split('  /* ─── DOM')[0]
+solver=prefix+"loadReal(); return {solution:newton(), gradient:grad([.2,-.3,.1]), losses:[lossAt([.200001,-.3,.1]),lossAt([.199999,-.3,.1])]}; });"
+js=script[:script.index('console.log')]+"M.frame=()=>{};sandbox.ML4HL=M;M.register=(name,fn)=>{sandbox.answer=fn({}, {data:{X:d.X,y:d.y}})};vm.runInNewContext(d.solver,sandbox);console.log(JSON.stringify(sandbox.answer));"
+r=json.loads(subprocess.check_output(['node','-e',js,str(ROOT/'ml4hl/assets/core.js')],input=json.dumps(dict(X=X.tolist(),y=labels.tolist(),solver=solver)).encode()))
+from sklearn.linear_model import LogisticRegression
+reference=LogisticRegression(C=1,tol=1e-12,max_iter=2000).fit(X,labels)
+np.testing.assert_allclose(r['solution']['w'],np.r_[reference.coef_[0],reference.intercept_],atol=1e-6)
+np.testing.assert_allclose(r['gradient'][0],(r['losses'][0]-r['losses'][1])/2e-6,atol=1e-8)
 # Ensure rendering variants does not change computed artists or image pixels.
 import matplotlib
 matplotlib.use('Agg')
@@ -44,4 +55,4 @@ assert html.count('<img ')==3 and line.get_color()==color
 np.testing.assert_array_equal(im.get_array(),pixels)
 for mode in ('light','dark'):
  assert len(set(THEME[mode][k] for k in THEME['categorical']))==12
-print('PASS: OLS, tied ranks, Spearman, covariance/Gram PCA, constant-data PCA, plot preservation, 12 distinct category colors')
+print('PASS: OLS, tied ranks, Spearman, covariance/Gram PCA, constant-data PCA, plot preservation, 12 distinct category colors, logistic Newton/gradient references')
