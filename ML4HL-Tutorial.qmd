@@ -45,6 +45,13 @@ Machine learning for human learners can initially seem a clash of two mutually u
 
 **How to use this page.** Every figure with a play button or a slider is live: drag things, break things, and watch the readout underneath tell you what happened. The grey code blocks are real [scikit-learn](https://scikit-learn.org) code you can copy into your own analyses. Prefer to run it yourself? The [generated notebook opens in Google Colab](https://colab.research.google.com/github/ColinConwell/ML4HL-Workshop/blob/main/ML4HL-Tutorial.ipynb), including the interactive figures. [Download the source and notebook](https://github.com/ColinConwell/ML4HL-Workshop).
 
+<details>
+<summary>Abbreviations Used in the Figures</summary>
+
+**GD** means gradient descent (taking downhill steps); **SGD** means stochastic gradient descent (estimating those steps from small, randomly selected batches). **OLS** means ordinary least squares (the line that minimizes squared misses). **MSE** means mean squared error (the average squared miss), and **RMSE** is its square root, which brings the error back to the outcome's original units. **CV** means cross-validation (rotating which observations are held out). In classifier labels, **kNN** means *k*-nearest neighbors (a vote among nearby examples), **SVM** means support vector machine (a classifier that seeks separation between categories), and **RBF** means radial basis function (a smooth measure of how strongly nearby points influence the prediction).
+
+</details>
+
 ::: {.roadmap}
 <div class="sup"><strong>Regression</strong><small>predict a number</small></div>
 <div class="sup"><strong>Categorization</strong><small>predict a label</small></div>
@@ -1770,14 +1777,14 @@ All datasets used in this tutorial are publicly available. Please cite the prima
 | Dataset | Domain | Primary source |
 |---|---|---|
 | World Bank Living Standards Measurement Study (LSMS) household health & expenditure (`load_household_survey`) | anthropology, health economics | World Bank Living Standards Measurement Study; Cameron & Trivedi (2005) |
-| Dollar Street household photos & incomes (`load_dollar_street`) | anthropology | [Gapminder Dollar Street](https://www.gapminder.org/dollar-street) (CC BY 4.0), via [`iamshnoo/dollarstreet`](https://huggingface.co/datasets/iamshnoo/dollarstreet) |
-| Stanford Wordbank MB-CDI vocabulary (`load_wordbank`) | child development, language acquisition | Frank et al. (2017, 2021), [Wordbank](https://wordbank.stanford.edu) MacArthur-Bates CDI repository |
+| Dollar Street household photos & incomes (`load_dollar_street`) | anthropology | [Gapminder Dollar Street](https://www.gapminder.org/dollar-street) (Creative Commons Attribution, CC BY 4.0), via [`iamshnoo/dollarstreet`](https://huggingface.co/datasets/iamshnoo/dollarstreet) |
+| Stanford Wordbank MacArthur–Bates Communicative Development Inventories (MB-CDI) vocabulary (`load_wordbank`) | child development, language acquisition | Frank et al. (2017, 2021), [Wordbank](https://wordbank.stanford.edu) MacArthur-Bates CDI repository |
 | IHDP perinatal risk, language, reading & attention (`load_perinatal_dev`) | developmental & clinical psychology | Brooks-Gunn et al. (1992); Infant Health and Development Program longitudinal cohort |
 | DASS-42 symptom inventory (`load_dass`) | clinical psychology | Lovibond & Lovibond (1995); [Open-Source Psychometrics Project](https://openpsychometrics.org/_rawdata/) |
-| The Music Lab NHS & infant-directed vocalizations (`load_musiclab`) | music therapy, child dev, anthropology | Mehr et al. (2019), *Science*; Hilton et al. (2022), *Nature Human Behaviour* ([The Music Lab](https://themusiclab.org)) |
-| 13-Dimensions of Music Emotion (`load_music_emotions`) | music therapy, affective science | Cowen et al. (2020), *PNAS*, via [`baobaoh/13-dimensions-music-emotions`](https://huggingface.co/datasets/baobaoh/13-dimensions-music-emotions) |
+| The Music Lab Natural History of Song (NHS) & infant-directed vocalizations (`load_musiclab`) | music therapy, child dev, anthropology | Mehr et al. (2019), *Science*; Hilton et al. (2022), *Nature Human Behaviour* ([The Music Lab](https://themusiclab.org)) |
+| 13-Dimensions of Music Emotion (`load_music_emotions`) | music therapy, affective science | Cowen et al. (2020), *Proceedings of the National Academy of Sciences (PNAS)*, via [`baobaoh/13-dimensions-music-emotions`](https://huggingface.co/datasets/baobaoh/13-dimensions-music-emotions) |
 | THINGS concepts & SPoSE human similarity (`load_things`) | cognitive science, perception | Hebart et al. (2020), *Nature Human Behaviour* ([THINGS initiative](https://things-initiative.org)) |
 | Zebra finch vocal repertoire (`load_finch`) | organismal & perceptual biology | Elie & Theunissen (2016), *Animal Cognition*, via [`cgeorgiaw/animal-sounds`](https://huggingface.co/datasets/cgeorgiaw/animal-sounds) |
-| Wisconsin breast biopsy & PneumoniaMNIST | clinical medicine | [UCI ML Repository](https://archive.ics.uci.edu/dataset/17); Yang et al. (2023), *Scientific Data* ([MedMNIST v2](https://medmnist.com)) |
+| Wisconsin breast biopsy & PneumoniaMNIST | clinical medicine | [University of California, Irvine (UCI) Machine Learning Repository](https://archive.ics.uci.edu/dataset/17); Yang et al. (2023), *Scientific Data* ([MedMNIST v2](https://medmnist.com)) |
 
 Image and text embeddings were computed with [SigLIP 2](https://huggingface.co/google/siglip2-base-patch16-224). Precomputed artifacts and the `ml4hl` package are hosted on the [`colinconwell/ml4hl`](https://huggingface.co/datasets/colinconwell/ml4hl) Hugging Face dataset repository and can be rebuilt from source via `scripts/build_artifacts.py`.
