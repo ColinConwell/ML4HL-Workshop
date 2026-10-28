@@ -6,9 +6,9 @@ An executable workshop by Colin Conwell, VISNA Lab. The Quarto source introduces
 
 ## Build and Validate
 
-Use Python 3.12, Quarto 1.5.57 or later, and Node.js 20 or later. Run `python -m pip install '.[tutorial]'`, then `python scripts/build_theme.py`, `python scripts/to_colab.py`, and `quarto render ML4HL-Tutorial.qmd --no-execute-daemon`. Run `python scripts/check_science.py` for the numerical reference checks. `ML4HL-Tutorial.qmd` is the source of truth; regenerate the notebook instead of editing it directly.
+Use Python 3.12, Quarto 1.5.57 or later, and Node.js 20 or later. Run `python -m pip install '.[tutorial]'`, then `python scripts/build_theme.py`, `python scripts/to_colab.py`, and `quarto render ML4HL-Tutorial.qmd --no-execute-daemon`. Run `python scripts/check_data_release.py` to verify all public data checksums and `python scripts/check_science.py` for the numerical reference checks. `ML4HL-Tutorial.qmd` is the source of truth; regenerate the notebook instead of editing it directly.
 
-The notebook carries a checksum-verified copy of the reviewed helper code. Dataset artifacts are downloaded from the immutable Hugging Face revision in `ml4hl/assets/data-release.json`. Its setup installs tutorial packages missing from Colab. The VISNA logo remains on its original white background. Page appearance and plot rendering can be controlled independently.
+The notebook carries a checksum-verified copy of the reviewed helper code. Dataset artifacts are downloaded from the immutable Hugging Face revision in `ml4hl/assets/data-release.json`. Its setup installs tutorial packages missing from Colab. `ML4HL_THREADS` controls native-library threads and `ML4HL_N_JOBS` controls cross-validation jobs (both default to 2). To inspect or rebuild the prepared datasets, install `.[artifacts]` and use `python scripts/build_artifacts.py --help`; rebuilding against changed upstream sources is a new data release, not a bit-for-bit reproduction of the pinned artifacts. The VISNA logo remains on its original white background. Page appearance and plot rendering can be controlled independently.
 
 ## Execution and Publication
 
