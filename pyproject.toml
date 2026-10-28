@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ml4hl"
+version = "0.1.0"
+description = "Interactive widgets, simulators, and dataset loaders for the ML-4-HL (Machine Learning for Human Learners) tutorial."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Colin Conwell", email = "conwell@mit.edu" }]
+license = { text = "MIT" }
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.0",
+  "ipython>=7.34",
+  "huggingface_hub>=0.24",
+  "pyarrow>=14",
+]
+
+[project.optional-dependencies]
+tutorial = [
+  "scikit-learn>=1.6",
+  "scipy>=1.11",
+  "matplotlib>=3.8",
+  "seaborn>=0.13",
+  "rsatoolbox>=0.2",
+  "medmnist>=3.0",
+  "ipykernel>=6.29",
+  "jupyter>=1.0",
+  "nbformat>=5.10",
+]
+artifacts = [
+  "torch>=2.3",
+  "transformers>=4.49",
+  "sentencepiece>=0.2",
+  "protobuf>=4",
+  "datasets>=3.0",
+  "librosa>=0.10",
+  "soundfile>=0.12",
+  "pillow>=10",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ml4hl"]
+
+[tool.hatch.build.targets.sdist]
+include = ["ml4hl", "README.md", "pyproject.toml"]

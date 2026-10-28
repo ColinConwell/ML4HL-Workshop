@@ -1,0 +1,283 @@
+/* ══════════════════════════════════════════════════════════════════
+   ML4HL widgets — frame, controls, readouts.
+   Aligned with the ScalingPessimism manuscript widget kit (.widget,
+   .widget-head, .wrow, .wbtn, .readout). Everything is scoped under
+   .ml4hl so host pages (Quarto/Bootstrap, Colab, JupyterLab) keep
+   their own styles.
+   ══════════════════════════════════════════════════════════════════ */
+
+.ml4hl.widget {
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --fg: #2a2a2a;
+  --muted: #8a877e;
+  --faint: #c9c4b8;
+  --border: #ddd9d0;
+  --grid: #e7e3da;
+  --code-bg: #f0ede6;
+  --blue: #2563eb;
+  --orange: #d97706;
+  --green: #16a34a;
+  --red: #b83a2a;
+  --mono: 'DM Mono', ui-monospace, Menlo, Consolas, monospace;
+  --sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  position: relative;
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 24px 0 10px;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  box-shadow: none;
+  color: var(--fg);
+  font: 14px/1.45 var(--sans);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+.ml4hl.widget *,
+.ml4hl.widget *::before,
+.ml4hl.widget *::after { box-sizing: border-box; }
+
+/* ─── Head ───────────────────────────────────────────────────── */
+.ml4hl .widget-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0 0 12px;
+}
+.ml4hl .widget-title {
+  font: 500 10px/1.4 var(--mono);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ml4hl .widget-hint {
+  font: 10.5px/1.4 var(--mono);
+  color: var(--muted);
+  text-align: right;
+}
+.ml4hl .mini-title {
+  margin: 0 0 6px;
+  font: 10px/1.3 var(--mono);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─── Canvas ─────────────────────────────────────────────────── */
+.ml4hl .canvas-wrap {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  line-height: 0;
+}
+.ml4hl .canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  border-radius: 3px;
+}
+.ml4hl .canvas-wrap canvas.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: none;
+}
+.ml4hl .canvas-wrap.plain {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+}
+.ml4hl .canvas-wrap.dark {
+  border: 1px solid #1d2030;
+  border-radius: 3px;
+  background: #0c0e16;
+}
+.ml4hl .canvas-wrap.bare canvas:not(.overlay) { background: transparent; }
+.ml4hl canvas:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* ─── Layout ─────────────────────────────────────────────────── */
+.ml4hl .wsplit {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+}
+.ml4hl .wpanel { min-width: 0; }
+@media (max-width: 680px) {
+  .ml4hl .wsplit { flex-direction: column; }
+  .ml4hl .wsplit > .wpanel { flex: 1 1 auto !important; }
+}
+.ml4hl.narrow .wsplit { flex-direction: column; }
+.ml4hl.narrow .wsplit > .wpanel { flex: 1 1 auto !important; }
+
+/* ─── Control rows ───────────────────────────────────────────── */
+.ml4hl .wrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.ml4hl .wrow + .wrow { margin-top: 8px; }
+.ml4hl .wspacer { flex: 1 1 auto; }
+.ml4hl .wlabel {
+  font: 500 10.5px/1 var(--mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.ml4hl .wgroup { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+
+.ml4hl input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1 1 120px;
+  min-width: 90px;
+  height: 3px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+.ml4hl input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fg);
+  cursor: pointer;
+}
+.ml4hl input[type=range]::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fg);
+  cursor: pointer;
+}
+.ml4hl input[type=range]:focus-visible { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); }
+.ml4hl input[type=range].accent-green { background: #bbf7d0; }
+.ml4hl input[type=range].accent-green::-webkit-slider-thumb { background: var(--green); }
+.ml4hl input[type=range].accent-green::-moz-range-thumb { background: var(--green); }
+.ml4hl input[type=range].accent-blue { background: #dbe6fd; }
+.ml4hl input[type=range].accent-blue::-webkit-slider-thumb { background: var(--blue); }
+.ml4hl input[type=range].accent-blue::-moz-range-thumb { background: var(--blue); }
+.ml4hl input[type=range].accent-orange { background: #fbe7c6; }
+.ml4hl input[type=range].accent-orange::-webkit-slider-thumb { background: var(--orange); }
+.ml4hl input[type=range].accent-orange::-moz-range-thumb { background: var(--orange); }
+.ml4hl input[type=range].accent-red { background: #f3d3cd; }
+.ml4hl input[type=range].accent-red::-webkit-slider-thumb { background: var(--red); }
+.ml4hl input[type=range].accent-red::-moz-range-thumb { background: var(--red); }
+
+.ml4hl .wbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--muted);
+  font: 500 10.5px/1.25 var(--mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ml4hl .wbtn:hover { border-color: var(--blue); color: var(--blue); }
+.ml4hl .wbtn:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.ml4hl .wbtn.on,
+.ml4hl .wbtn.on:hover {
+  border-color: var(--fg);
+  background: var(--fg);
+  color: var(--surface);
+}
+.ml4hl .wbtn:disabled { opacity: 0.45; cursor: default; }
+.ml4hl .wbtn-reset {
+  color: var(--surface);
+  background: var(--fg);
+  border-color: var(--fg);
+  letter-spacing: 1.2px;
+}
+.ml4hl .wbtn-reset:hover {
+  color: var(--surface);
+  background: #3d3d3d;
+  border-color: #3d3d3d;
+}
+.ml4hl .wbtn .k { text-transform: none; }
+.ml4hl .wplay { min-width: 54px; justify-content: center; }
+
+/* ─── Readouts ───────────────────────────────────────────────── */
+.ml4hl .readout {
+  font: 11.5px/1.85 var(--mono);
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.ml4hl .wread { margin-top: 10px; min-height: 1.85em; }
+.ml4hl .wval { min-width: 46px; font-size: 11px; line-height: 1; white-space: nowrap; }
+.ml4hl .wval.accent-green { color: var(--green); }
+.ml4hl .wval.accent-blue { color: var(--blue); }
+.ml4hl .wval.accent-orange { color: var(--orange); }
+.ml4hl .wval.accent-red { color: var(--red); }
+.ml4hl .tval { min-width: 98px; text-align: right; }
+.ml4hl .readout .k { color: var(--muted); }
+.ml4hl .readout .b { color: var(--blue); }
+.ml4hl .readout .o { color: var(--orange); }
+.ml4hl .readout .g { color: var(--green); }
+.ml4hl .readout .r { color: var(--red); }
+.ml4hl .readout .sep { color: var(--faint); padding: 0 6px; }
+.ml4hl .wnote {
+  margin-top: 10px;
+  font: 10.5px/1.6 var(--mono);
+  color: var(--muted);
+}
+
+/* ─── Legend ─────────────────────────────────────────────────── */
+.ml4hl .wlegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 14px;
+  margin-top: 8px;
+  font: 10px/1.5 var(--mono);
+  color: var(--muted);
+}
+.ml4hl .wchip { display: inline-flex; align-items: center; gap: 5px; }
+.ml4hl .wdot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid transparent;
+  border-radius: 50%;
+}
+.ml4hl .wdot.line { width: 14px; height: 0; border-width: 1px 0 1px; border-radius: 0; }
+
+/* ─── Transport ──────────────────────────────────────────────── */
+.ml4hl .transport {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+}
+
+/* ─── Errors ─────────────────────────────────────────────────── */
+.ml4hl .ml4hl-error {
+  padding: 10px 12px;
+  border-left: 3px solid var(--red);
+  background: #fbefec;
+  font: 12px/1.5 var(--mono);
+  color: var(--red);
+}

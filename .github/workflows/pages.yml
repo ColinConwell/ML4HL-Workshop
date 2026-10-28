@@ -1,0 +1,98 @@
+name: Workshop Pages
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      MPLBACKEND: Agg
+      JOBLIB_MULTIPROCESSING: '0'
+      OPENBLAS_NUM_THREADS: '2'
+      OMP_NUM_THREADS: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Quarto for the Container Architecture
+        run: |
+          QUARTO_ARCH=$(dpkg --print-architecture)
+          curl --fail --location --retry 3 "https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.57/quarto-1.5.57-linux-${QUARTO_ARCH}.deb" -o /tmp/quarto.deb
+          sudo dpkg -i /tmp/quarto.deb
+      - name: Install Build Dependencies
+        working-directory: .
+        run: |
+          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install '.[tutorial]'
+      - name: Generate and Validate ML4HL
+        working-directory: .
+        run: |
+          python scripts/build_theme.py
+          python scripts/to_colab.py --asset-ref "${{ github.sha }}"
+          python scripts/check_science.py
+          quarto render ML4HL-Tutorial.qmd --no-execute-daemon
+          python scripts/check_outputs.py
+      - name: Build and Validate Publication
+        run: |
+          python scripts/build_workshop.py
+          python scripts/validate_site.py _site --prefix /ML4HL-Workshop/
+      - uses: actions/upload-artifact@v4
+        if: ${{ env.ACT != 'true' }}
+        with:
+          name: site
+          path: _site
+          include-hidden-files: true
+  colab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare Ephemeral Runner Disk
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+      - name: Install Pinned Colab-Test
+        run: python -m pip install nbformat 'git+https://github.com/ColinConwell/Colab-Test.git@ee5bcec8280c4e6261ccb03b15ee18a9a79aaaa0'
+      - name: Official Runtime Execution With Notebook Setup
+        working-directory: .
+        run: |
+          python scripts/to_colab.py --asset-ref "${{ github.sha }}"
+          python scripts/check_colab.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: colab-runtime-evidence
+          path: ./.cache/colab-official
+  deploy:
+    needs: [build, colab]
+    if: ${{ vars.PAGES_DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: _site
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@329bcc8f12caed2cefe5a5b80781499a6f3b361b # v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          publish_branch: gh-pages
+          force_orphan: false

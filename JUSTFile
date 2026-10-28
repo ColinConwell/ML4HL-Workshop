@@ -1,0 +1,14 @@
+default:
+    @just --list
+setup:
+    uv venv --python 3.12
+    uv pip install -e ".[tutorial]"
+render:
+    .venv/bin/python scripts/build_theme.py
+    PATH="$PWD/.venv/bin:$PATH" quarto render ML4HL-Tutorial.qmd --no-execute-daemon
+colab:
+    .venv/bin/python scripts/to_colab.py
+check:
+    .venv/bin/python scripts/check_science.py
+site:
+    .venv/bin/python scripts/build_workshop.py

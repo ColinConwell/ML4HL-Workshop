@@ -1,0 +1,376 @@
+{
+  "version": "0.2.0",
+  "sections": [
+    {"id": "opening", "num": 0, "title": "What is machine learning?"},
+    {"id": "regression", "num": 1, "title": "Regression (linear & non-linear splines)"},
+    {"id": "classification", "num": 2, "title": "Categorization"},
+    {"id": "clustering", "num": 3, "title": "Clustering"},
+    {"id": "dimred", "num": 4, "title": "Dimensionality reduction"},
+    {"id": "rsa", "num": 5, "title": "Representational similarity analysis"},
+    {"id": "cv", "num": 6, "title": "Cross-validation & resampling"}
+  ],
+  "widgets": [
+    {
+      "name": "error_landscape", "fig": 1, "section": "opening",
+      "title": "Learning is rolling downhill",
+      "hint": "Drag the ball &middot; press play &middot; change the step size",
+      "pitch": "An error landscape with local and global minima. Gradient descent steps in the downhill direction proportional to the local slope.",
+      "animated": true, "modes": ["sim"],
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 3, "doc": "Landscape seed"},
+        {"key": "lr", "type": "float", "min": 0.001, "max": 0.08, "step": 0.001, "default": 0.006, "doc": "Learning rate (step size)"},
+        {"key": "start", "type": "float", "min": 0.02, "max": 0.98, "step": 0.01, "default": 0.03, "doc": "Starting position of the ball"},
+        {"key": "wells", "type": "int", "min": 2, "max": 5, "default": 3, "doc": "Number of valleys"}
+      ]
+    },
+    {
+      "name": "error_landscape_2d", "fig": 1, "fig_label": "1B", "section": "opening",
+      "variant_of": "error_landscape",
+      "title": "2D error surface: saddle points, momentum, and SGD noise",
+      "hint": "Click the map to drop the walkers &middot; press play &middot; compare plain GD, momentum, and noisy SGD",
+      "pitch": "Alternative to Figure 1: a two-parameter contour basin where plain gradient descent stalls in a local trap or saddle plateau, while momentum and stochastic mini-batch noise cross into the global basin.",
+      "animated": true, "modes": ["sim"],
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 5},
+        {"key": "lr", "type": "float", "min": 0.01, "max": 0.25, "step": 0.005, "default": 0.055, "doc": "Step size"},
+        {"key": "momentum", "type": "float", "min": 0, "max": 0.95, "step": 0.05, "default": 0.85, "doc": "Momentum coefficient"},
+        {"key": "sgd_noise", "type": "float", "min": 0, "max": 1.2, "step": 0.05, "default": 0.45, "doc": "Mini-batch gradient noise"}
+      ]
+    },
+    {
+      "name": "ols_fit", "fig": 2, "section": "regression",
+      "title": "Fit a line by eye, then by least squares",
+      "hint": "Drag the two handles &middot; or drag the line itself",
+      "pitch": "Residuals drawn as literal squares: ordinary least squares picks the line with the smallest total square area.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{x: number[], y: number[], xlabel?, ylabel?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 7},
+        {"key": "n", "type": "int", "min": 8, "max": 120, "default": 28, "doc": "Number of points"},
+        {"key": "noise", "type": "float", "min": 0, "max": 2, "step": 0.05, "default": 0.6, "doc": "Noise around the true line"},
+        {"key": "slope", "type": "float", "min": -2, "max": 2, "step": 0.05, "default": 0.8, "doc": "True slope"},
+        {"key": "residuals", "type": "choice", "options": ["squares", "lines"], "default": "squares"}
+      ]
+    },
+    {
+      "name": "ols_robust", "fig": 2, "fig_label": "2B", "section": "regression",
+      "variant_of": "ols_fit",
+      "title": "Why squaring matters: outliers and OLS (L2) vs robust (L1) regression",
+      "hint": "Drag the red outlier point anywhere on the plot &middot; compare the squared-error and absolute-error lines",
+      "pitch": "Alternative to Figure 2: dragging a single high-leverage outlier shows how quadratic squares pull the OLS line, whereas absolute-error (L1 / Huber) regression stays anchored to the bulk of the data.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{x: number[], y: number[], xlabel?, ylabel?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 7},
+        {"key": "n", "type": "int", "min": 10, "max": 100, "default": 26},
+        {"key": "noise", "type": "float", "min": 0.1, "max": 1.5, "step": 0.05, "default": 0.45}
+      ]
+    },
+    {
+      "name": "gd_regression", "fig": 3, "section": "regression",
+      "title": "Fitting a line by gradient descent",
+      "hint": "Press play &middot; click the error map to pick a new starting line",
+      "pitch": "The same line fit, found by walking downhill on the error surface over (slope, intercept).",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{x: number[], y: number[], xlabel?, ylabel?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 11},
+        {"key": "n", "type": "int", "min": 10, "max": 120, "default": 36},
+        {"key": "noise", "type": "float", "min": 0, "max": 2, "step": 0.05, "default": 0.5},
+        {"key": "lr", "type": "float", "min": 0.005, "max": 0.6, "step": 0.005, "default": 0.12, "doc": "Learning rate"},
+        {"key": "steps", "type": "int", "min": 40, "max": 600, "default": 220, "doc": "Number of descent steps"}
+      ]
+    },
+    {
+      "name": "spline_scaling", "fig": 4, "section": "regression",
+      "added": true,
+      "title": "Bending the line: piecewise segments and splines",
+      "hint": "Press play or scrub K &middot; switch linear vs cubic spline &middot; toggle adaptive knots",
+      "pitch": "New addition (from ScalingPessimism resolution scaling): tile a nonlinear curve with K piecewise segments or cubic splines joined at knots. Error falls as a power of K on log-log axes until hitting the noise floor.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{x: number[], y: number[], curve_x?: number[], curve_y?: number[], xlabel?, ylabel?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 7},
+        {"key": "degree", "type": "choice", "options": ["linear", "cubic"], "default": "linear", "doc": "Piecewise linear (deg 1) or cubic spline (deg 3)"},
+        {"key": "placement", "type": "choice", "options": ["uniform", "adaptive"], "default": "uniform", "doc": "Equal spacing vs curvature-weighted knots"},
+        {"key": "noise", "type": "float", "min": 0, "max": 0.45, "step": 0.03, "default": 0, "doc": "Observation noise (sim mode)"}
+      ]
+    },
+    {
+      "name": "spline_relu_basis", "fig": 4, "fig_label": "4B", "section": "regression",
+      "variant_of": "spline_scaling",
+      "title": "Splines as a bank of ReLU hinges (from fixed knots to learned features)",
+      "hint": "Drag the orange knot pins along the x-axis &middot; press play to optimize knot locations by gradient descent",
+      "pitch": "Alternative to Figure 4: a piecewise-linear spline is a weighted sum of ReLU hinges max(0, x - knot). Dragging or optimizing the knot positions turns fixed-basis spline regression into a 1-layer neural network.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{x: number[], y: number[], xlabel?, ylabel?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 11},
+        {"key": "knots", "type": "int", "min": 1, "max": 8, "default": 4, "doc": "Number of interior ReLU knots"}
+      ]
+    },
+    {
+      "name": "category_manifolds", "fig": 5, "section": "classification",
+      "title": "What categories look like to a machine",
+      "hint": "Switch shapes &middot; click to add a point (shift-click for the next category)",
+      "pitch": "Categories are clouds (manifolds) in feature space. Some can be split by a straight line; most cannot.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{X: [x, y][], y: int[], names?: string[], xlabel?, ylabel?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 5},
+        {"key": "shape", "type": "choice", "options": ["blobs", "moons", "circles", "xor", "spiral"], "default": "blobs"},
+        {"key": "n", "type": "int", "min": 20, "max": 200, "default": 80, "doc": "Points per class"},
+        {"key": "noise", "type": "float", "min": 0, "max": 1, "step": 0.02, "default": 0.3},
+        {"key": "k", "type": "int", "min": 2, "max": 4, "default": 3, "doc": "Classes (blobs, spiral)"},
+        {"key": "territories", "type": "bool", "default": true}
+      ]
+    },
+    {
+      "name": "logistic_gd", "fig": 6, "section": "classification",
+      "title": "Logistic regression, learning a boundary",
+      "hint": "Press play &middot; scrub through training &middot; change the overlap",
+      "pitch": "A probability map sharpens step by step until the boundary matches the closed-form (sklearn) solution.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{X: [x, y][], y: 0|1[], names?: [string, string], xlabel?, ylabel?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 4},
+        {"key": "n", "type": "int", "min": 20, "max": 200, "default": 70, "doc": "Points per class"},
+        {"key": "overlap", "type": "float", "min": 0, "max": 1, "step": 0.02, "default": 0.45},
+        {"key": "lr", "type": "float", "min": 0.05, "max": 4, "step": 0.05, "default": 0.6},
+        {"key": "steps", "type": "int", "min": 50, "max": 800, "default": 300}
+      ]
+    },
+    {
+      "name": "logistic_link", "fig": 6, "fig_label": "6B", "section": "classification",
+      "variant_of": "logistic_gd",
+      "title": "Why not fit a straight line to 0 / 1 labels? The sigmoid link",
+      "hint": "Slide the extreme point &middot; drag steepness &middot; watch the threshold at y = 0.5",
+      "pitch": "Alternative to Figure 6: fitting a straight OLS line directly to 0/1 outcomes predicts probabilities below 0% and above 100% and gets skewed by easy extreme points; the logistic sigmoid clamps predictions to [0, 1].",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{x: number[], y: 0|1[], names?: [string, string], xlabel?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 6},
+        {"key": "extreme", "type": "float", "min": 1.5, "max": 6.5, "step": 0.1, "default": 2.2, "doc": "Position of extreme positive points"},
+        {"key": "steepness", "type": "float", "min": 0.5, "max": 6, "step": 0.1, "default": 2.4, "doc": "Sigmoid slope"}
+      ]
+    },
+    {
+      "name": "perceptron", "fig": 7, "section": "classification",
+      "title": "A linear perceptron, live",
+      "hint": "Press play or step &middot; click the plane to add points (shift-click for the other class)",
+      "pitch": "The classic single-neuron classifier: weighted inputs, a threshold, and an update rule that nudges weights after each mistake.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{X: [x, y][], y: 0|1[]}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 2},
+        {"key": "preset", "type": "choice", "options": ["separable", "xor"], "default": "separable"},
+        {"key": "n", "type": "int", "min": 6, "max": 60, "default": 24},
+        {"key": "lr", "type": "float", "min": 0.02, "max": 1, "step": 0.02, "default": 0.25}
+      ]
+    },
+    {
+      "name": "mlp_xor", "fig": 7, "fig_label": "7B", "section": "classification",
+      "variant_of": "perceptron",
+      "title": "Folding the plane: how one hidden layer solves XOR",
+      "hint": "Press play to train &middot; watch the hidden hinges fold the four corners into a separable cloud",
+      "pitch": "Alternative to Figure 7: where a single perceptron fails on XOR, a hidden layer of ReLU hinges folds the input plane so the opposite corners become linearly separable.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{X: [x, y][], y: 0|1[]}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 4},
+        {"key": "hidden", "type": "int", "min": 2, "max": 8, "default": 4, "doc": "Number of hidden ReLU units"},
+        {"key": "preset", "type": "choice", "options": ["xor", "circles"], "default": "xor"}
+      ]
+    },
+    {
+      "name": "classifier_zoo", "fig": 8, "section": "classification",
+      "title": "One dataset, five classifiers",
+      "hint": "Pick a model &middot; slide its main setting &middot; watch train vs test accuracy",
+      "pitch": "Real scikit-learn decision surfaces, precomputed in Python across each model's main hyperparameter.",
+      "animated": false, "modes": ["data"],
+      "data_doc": "Output of ml4hl.zoo.decision_grids(X, y) (one or more datasets).",
+      "params": [
+        {"key": "model", "type": "choice", "options": ["logistic", "knn", "svm", "tree", "gbm"], "default": "knn"}
+      ]
+    },
+    {
+      "name": "percolation", "fig": 9, "section": "clustering",
+      "title": "Clusters as connected ink",
+      "hint": "Slide the disc size &middot; hover a point &middot; switch to exemplar voting",
+      "pitch": "Grow a disc around every point: clusters are whatever touches. Then let points vote for exemplars instead.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{X: [x, y][]}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 8},
+        {"key": "n", "type": "int", "min": 60, "max": 260, "default": 170},
+        {"key": "eps", "type": "float", "min": 0.02, "max": 0.45, "step": 0.005, "default": 0.08, "doc": "Reach (link distance)"},
+        {"key": "mode", "type": "choice", "options": ["percolation", "affinity"], "default": "percolation"},
+        {"key": "preference", "type": "float", "min": 0.1, "max": 3, "step": 0.05, "default": 1, "doc": "Affinity preference (x median similarity)"}
+      ]
+    },
+    {
+      "name": "percolation_grid", "fig": 9, "fig_label": "9B", "section": "clustering",
+      "variant_of": "percolation",
+      "title": "Lattice percolation: connected clusters and the critical threshold",
+      "hint": "Press play or slide open-bond probability p &middot; toggle all clusters vs largest component",
+      "pitch": "Alternative to Figure 9 (from ScalingPessimism): bond percolation on a 2D lattice across the critical phase transition at p_c = 0.50, where local connections suddenly coalesce into a spanning cluster.",
+      "animated": true, "modes": ["sim"],
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 9999, "default": 2026},
+        {"key": "view", "type": "choice", "options": ["clusters", "giant"], "default": "clusters"}
+      ]
+    },
+    {
+      "name": "kmeans", "fig": 10, "section": "clustering",
+      "title": "K-means, one step at a time",
+      "hint": "Press play or step &middot; drag a center (the crosses) to restart from there",
+      "pitch": "Assign every point to its nearest centroid, move each centroid to the middle of its points, repeat.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{X: [x, y][]}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 12},
+        {"key": "n", "type": "int", "min": 20, "max": 240, "default": 80, "doc": "Total points"},
+        {"key": "true_k", "type": "int", "min": 2, "max": 6, "default": 4},
+        {"key": "k", "type": "int", "min": 1, "max": 8, "default": 4},
+        {"key": "init", "type": "choice", "options": ["random", "kmeans++"], "default": "random"}
+      ]
+    },
+    {
+      "name": "gmm_em", "fig": 10, "fig_label": "10B", "section": "clustering",
+      "variant_of": "kmeans",
+      "title": "Soft responsibilities and oval clusters: Gaussian Mixture EM vs K-means",
+      "hint": "Press play or step EM &middot; compare elliptical Gaussian components with spherical K-means",
+      "pitch": "Alternative to Figure 10: Expectation-Maximization (EM) fits full covariance ellipses and soft cluster probabilities, succeeding on elongated and overlapping clouds where K-means' Voronoi cells cut across clusters.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{X: [x, y][]}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 14},
+        {"key": "k", "type": "int", "min": 2, "max": 5, "default": 3, "doc": "Number of mixture components"}
+      ]
+    },
+    {
+      "name": "dendrogram", "fig": 11, "section": "clustering",
+      "title": "Hierarchical clustering: cut the tree",
+      "hint": "Drag the dashed cut line &middot; hover a branch to see its members &middot; switch linkage",
+      "pitch": "Merge the two closest groups, again and again. Where you cut the resulting tree decides how many clusters you get.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{X: number[][] (any dims), xy?: [x, y][] (display coordinates), labels?: string[]}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 6},
+        {"key": "n", "type": "int", "min": 8, "max": 70, "default": 34},
+        {"key": "true_k", "type": "int", "min": 2, "max": 6, "default": 3},
+        {"key": "linkage", "type": "choice", "options": ["single", "complete", "average", "ward"], "default": "ward"}
+      ]
+    },
+    {
+      "name": "autoencoder", "fig": 12, "section": "dimred",
+      "title": "An autoencoder squeezes, then rebuilds",
+      "hint": "Press train &middot; change the bottleneck &middot; drag a code bar to imagine",
+      "pitch": "A network that learns to copy its input through a narrow bottleneck. Self-supervised compression.",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{images: number[][] (N x 64 or N x side*side, values 0-1), side?: 8}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 3},
+        {"key": "bottleneck", "type": "int", "min": 1, "max": 16, "default": 3},
+        {"key": "lr", "type": "float", "min": 0.001, "max": 0.05, "step": 0.001, "default": 0.012}
+      ]
+    },
+    {
+      "name": "projection", "fig": 13, "section": "dimred",
+      "title": "Projections: PCA and random",
+      "hint": "Drag the line to rotate it (it snaps to the best one) &middot; switch to random projection",
+      "pitch": "PCA finds the direction of maximum spread. Random projections preserve pairwise distances across high dimensions.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{X2: [x, y][] (PCA tab), Xhigh?: number[][], labels?: int[] (random tab)}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 9},
+        {"key": "mode", "type": "choice", "options": ["pca", "random"], "default": "pca"},
+        {"key": "corr", "type": "float", "min": 0, "max": 0.97, "step": 0.01, "default": 0.8},
+        {"key": "d", "type": "int", "min": 20, "max": 400, "default": 200, "doc": "Original dimensions (random tab)"},
+        {"key": "k", "type": "int", "min": 1, "max": 100, "default": 10, "doc": "Projected dimensions (random tab)"}
+      ]
+    },
+    {
+      "name": "pca_reconstruct", "fig": 13, "fig_label": "13B", "section": "dimred",
+      "variant_of": "projection",
+      "title": "PCA scree spectrum and profile reconstruction",
+      "hint": "Slide the kept components k &middot; click a bar or cycle examples to see what PCA keeps vs drops",
+      "pitch": "Alternative to Figure 13: inspect the full eigenvalue scree plot alongside live reconstruction of individual feature profiles as k grows from 1 to d.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{X: number[][], feature_names?: string[]}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 9},
+        {"key": "k", "type": "int", "min": 1, "max": 12, "default": 3, "doc": "Kept principal components"}
+      ]
+    },
+    {
+      "name": "rdm_builder", "fig": 14, "section": "rsa",
+      "title": "Building and comparing RDMs",
+      "hint": "Hover a cell &middot; switch the distance &middot; shuffle the order &middot; run the shuffle test",
+      "pitch": "Features to distances to the upper triangle to a second-order comparison between two systems.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{names: string[], A: number[][], B: number[][], groups?: string[], labelA?, labelB?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 10},
+        {"key": "metric", "type": "choice", "options": ["euclidean", "correlation", "cosine"], "default": "correlation"},
+        {"key": "noise_b", "type": "float", "min": 0, "max": 2.5, "step": 0.05, "default": 0.8, "doc": "How different system B is"},
+        {"key": "order", "type": "choice", "options": ["category", "shuffled"], "default": "category"}
+      ]
+    },
+    {
+      "name": "rsa_pipeline", "fig": 14, "fig_label": "14B", "section": "rsa",
+      "variant_of": "rdm_builder",
+      "title": "End-to-end RSA pipeline: from feature tables to upper triangles to model comparison",
+      "hint": "Hover a pair in the RDM or vector barcode &middot; switch candidate model &middot; change distance metric",
+      "pitch": "Alternative to Figure 14: explicit four-stage construction showing how two feature tables of different widths become square RDMs, unfold their upper triangles into pair vectors, and score candidate models via Spearman rho.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{names: string[], A: number[][], B: number[][], groups?: string[], labelA?, labelB?}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 10},
+        {"key": "metric", "type": "choice", "options": ["correlation", "cosine", "euclidean"], "default": "correlation"}
+      ]
+    },
+    {
+      "name": "overfitting", "fig": 15, "section": "cv",
+      "title": "Underfitting, overfitting, and the sweet spot",
+      "hint": "Slide the flexibility (polynomial degree) &middot; resample the data &middot; watch the test error",
+      "pitch": "More flexible models always fit the training data better, but past a point they predict new data worse.",
+      "animated": false, "modes": ["sim", "data"],
+      "data_doc": "{x: number[], y: number[], xlabel?, ylabel?} (split into train/test inside)",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 14},
+        {"key": "n", "type": "int", "min": 8, "max": 80, "default": 18, "doc": "Training points"},
+        {"key": "noise", "type": "float", "min": 0.05, "max": 1, "step": 0.05, "default": 0.3},
+        {"key": "degree", "type": "int", "min": 0, "max": 15, "default": 3}
+      ]
+    },
+    {
+      "name": "cv_folds", "fig": 16, "section": "cv",
+      "title": "K-fold cross-validation (and leakage)",
+      "hint": "Press play to rotate the folds &middot; switch the splitting scheme &middot; compare with the truth line",
+      "pitch": "Every sample gets a turn in the test set. Split by group (household, patient, bird) or shared group quirks leak across folds.",
+      "animated": true, "modes": ["sim"],
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 15},
+        {"key": "k", "type": "int", "min": 2, "max": 10, "default": 5},
+        {"key": "scheme", "type": "choice", "options": ["kfold", "stratified", "group", "shuffle"], "default": "kfold"},
+        {"key": "groups", "type": "int", "min": 4, "max": 20, "default": 12, "doc": "Number of groups (e.g. households)"},
+        {"key": "group_effect", "type": "float", "min": 0, "max": 2, "step": 0.05, "default": 1.2, "doc": "How alike group members are"}
+      ]
+    },
+    {
+      "name": "resampling", "fig": 17, "section": "cv",
+      "title": "Bootstrap and permutation, built live",
+      "hint": "Press play to resample &middot; switch between bootstrap and permutation &middot; watch the histogram grow",
+      "pitch": "Resample your own data thousands of times to estimate sampling uncertainty (bootstrap) or test against a null hypothesis (permutation).",
+      "animated": true, "modes": ["sim", "data"],
+      "data_doc": "{a: number[], b: number[], names?: [string, string], unit?: string}",
+      "params": [
+        {"key": "seed", "type": "int", "min": 1, "max": 99, "default": 16},
+        {"key": "mode", "type": "choice", "options": ["bootstrap", "permutation"], "default": "permutation"},
+        {"key": "n", "type": "int", "min": 5, "max": 80, "default": 18, "doc": "Points per group"},
+        {"key": "effect", "type": "float", "min": 0, "max": 1.5, "step": 0.05, "default": 0.6, "doc": "True difference (in SDs)"}
+      ]
+    }
+  ]
+}
