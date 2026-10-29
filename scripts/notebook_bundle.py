@@ -1,5 +1,4 @@
-"""Bundle reviewed helper sources into the generated notebook's setup cell."""
-import base64
+"""Write a content-addressed helper archive and a compact notebook downloader."""
 import hashlib
 import io
 import zipfile
@@ -15,15 +14,27 @@ def bundled_helper_setup(root):
                 archive.writestr(info, path.read_bytes())
     payload = buf.getvalue()
     checksum = hashlib.sha256(payload).hexdigest()
+    relative = f"assets/helpers/ml4hl-{checksum}.zip"
+    destination = root / relative
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(payload)
     return f'''
 
-# Reviewed ml4hl source; bundled by scripts/to_colab.py. SHA-256: {checksum}
-import base64, hashlib, io, tempfile, zipfile, os
+# Download this notebook's reviewed helper version (Python, JavaScript, and CSS).
+import hashlib, io, tempfile, zipfile, os
+from urllib.request import urlopen
 os.environ["ML4HL_STANDALONE"] = "1"
 for _thread_variable in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
     os.environ[_thread_variable] = os.environ.get("ML4HL_THREADS", "2")
-_helper_zip = base64.b64decode({base64.b64encode(payload).decode()!r})
-assert hashlib.sha256(_helper_zip).hexdigest() == {checksum!r}
+_helper_sha256 = {checksum!r}
+_helper_url = (
+    "https://raw.githubusercontent.com/ColinConwell/ML4HL-Workshop/main/"
+    f"assets/helpers/ml4hl-{{_helper_sha256}}.zip"
+)
+with urlopen(_helper_url, timeout=60) as _response:
+    _helper_zip = _response.read()
+if hashlib.sha256(_helper_zip).hexdigest() != _helper_sha256:
+    raise RuntimeError("Helper download failed its SHA-256 check; nothing was loaded.")
 _helper_dir = tempfile.mkdtemp(prefix="ml4hl-helper-")
 with zipfile.ZipFile(io.BytesIO(_helper_zip)) as _archive:
     _archive.extractall(_helper_dir)

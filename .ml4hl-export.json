@@ -8,9 +8,9 @@
     "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "LICENSE-HELPER": "2eb2f59652242306d6f0ae93632559d386d6cbec4e4089f8f6285a14ee4773f7",
     "ML4HL-Tutorial.html": "5343e5aa96701417fab1f361be234fc26749f6bfdf00b5b662f11214da470d24",
-    "ML4HL-Tutorial.ipynb": "27e6b10266ebd1d8b5df79ff5b77b150e5f67f071825701a34ab2495f6b2cac9",
+    "ML4HL-Tutorial.ipynb": "c905e51e64a1067ed70a0cf2f8e031b99725920679f45608f9d4848c00a71a80",
     "ML4HL-Tutorial.qmd": "a7a1e8a20e2cfea01da6f5b59268e71b838b4fd054408e9356f68ab7a905b490",
-    "README.md": "5afaf5a0a3d3ef760a4cd99b796c8acfe8b14e63062891770c0d784bcc8d9f29",
+    "README.md": "7cb0b473fd75c6c47c28d80c9b8865e9f32fb9b0b7d9d1e7c81c541c63bcc1f4",
     "assets/README.md": "806e48cbe70b4d8d53d41b393509e743feab851d111aefc4775171c7cc213bc1",
     "assets/theme-head.html": "f625f51eaae7d1e849ca539c69b69c44040de3ec9332964d8cf9e0a6719c7c40",
     "assets/visna-logo-rounded.svg": "43abf88e2502704da39f05ced8cb19b627a2c2eab4a1d4f07f6dfa36cc06bab5",
@@ -62,14 +62,15 @@
     "scripts/build_workshop.py": "39bdbc9c88a682ce4c60b1638523e17250aa40f8a2db36b55fcaf8647448d00c",
     "scripts/check_colab.py": "893d709fc757f9886c1a9736e2ab7eeb73771fc92070466c0e6b8b79cea9e4d9",
     "scripts/check_data_release.py": "52eb76b69af0f2141862d053a2db95fdb24cbade42d5cdcb7cff5341684b866e",
-    "scripts/check_outputs.py": "955e3952e6edbd47ee66061711dda110056864cd8e05898bc8067ff673e4531f",
+    "scripts/check_outputs.py": "40f6d9c2f3348b35a070103e4a30e46404166bcbe8644d2c33cdedc62a23d43d",
     "scripts/check_science.py": "77e49074379d71b494c8e3bc0042edb713307c44bfa955cf9eab42ea07d6afb5",
     "scripts/colab-test.env": "1d58b99008d883871bc78c2e2ff7d6ac3226387b65ad4d0aef62e43bfee617f2",
     "scripts/colab_pinned.sh": "9a80bbd6ce5e3915cc899a022fc67efbc0cf59076173e6694caa777fd65edc85",
     "scripts/execute_notebook.py": "d902acff0ca42f57020f7bcfa8c1c642b4bf5280e26594481cb46f95151fc2ad",
-    "scripts/notebook_bundle.py": "9481fc4a438de28460a3df0431d8fba3a44ec08e81e9f6a2ee0ae9ac12a099b8",
-    "scripts/to_colab.py": "100376773499828425ab7bc00953fc60611f3029198348ca30db0684de95ec5a",
+    "scripts/notebook_bundle.py": "11eef79be517126a8f7e76fc8e9ad5340557059b58c9a5fb6d534c8f9d24743c",
+    "scripts/to_colab.py": "b40b1b1c5a3b887498a353ab9955764f9089d442aad76b26a7d89d446c25bbf3",
     "scripts/validate_site.py": "92b4000eb6001750b25974cc4ab854e4e1c4ed1a90572dec7b6d1972505b2640",
-    "styles.css": "bb0c6c4dc5ff6fd2b01123074a3639ce970421e7e771f434accbb670d9eefee3"
+    "styles.css": "bb0c6c4dc5ff6fd2b01123074a3639ce970421e7e771f434accbb670d9eefee3",
+    "assets/helpers/ml4hl-b565a192bb299e72654675f59aaf780cc6a5c157352293833cabe0f9ee163a13.zip": "b565a192bb299e72654675f59aaf780cc6a5c157352293833cabe0f9ee163a13"
   }
 }

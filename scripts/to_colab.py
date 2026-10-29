@@ -173,7 +173,7 @@ def main() -> None:
     out = args.out or args.src.with_suffix(".ipynb")
     ref = args.asset_ref
     if ref is None and out.exists():
-        match = re.search(r'ML4HL-Workshop/([a-f0-9]{40})/assets/visna-logo.jpg', out.read_text())
+        match = re.search(r'ML4HL-Workshop/([a-f0-9]{40})/assets/visna-logo(?:-rounded\.svg|\.jpg)', out.read_text())
         if match: ref = match.group(1)
     nb = build(args.src, ref or "main")
     nbformat.validate(nb)

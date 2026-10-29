@@ -13,7 +13,9 @@ assert 'data:image/png;base64,' in page and 'data:image/jpeg;base64,' in page
 assert 'Traceback (most recent call last)' not in page
 nb=nbformat.read(ROOT/'ML4HL-Tutorial.ipynb',4)
 assert sum(c.cell_type=='code' for c in nb.cells)==len(re.findall(r'^```\{python\}',source,re.M))+1
-assert 'base64.b64decode' in nb.cells[1].source and 'ML4HL_STANDALONE' in nb.cells[1].source
+assert 'urlopen(_helper_url' in nb.cells[1].source and 'ML4HL_STANDALONE' in nb.cells[1].source
+assert 'hashlib.sha256(_helper_zip)' in nb.cells[1].source
+assert max(map(len, nb.cells[1].source.splitlines())) < 200, 'Oversized notebook setup line'
 print(f'PASS: {len(labels)} labeled source cells, at least 21 themed figures, logo, and generated notebook setup')
 
 # Publication requirements shared by Quarto and the generated Colab notebook.
