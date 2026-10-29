@@ -1,7 +1,7 @@
 # ADE Cache
-.agents/
-.codex/
+.vscode/
 .cursor/
+.codex/
 .claude/
 # Runtime and secrets
 .env
