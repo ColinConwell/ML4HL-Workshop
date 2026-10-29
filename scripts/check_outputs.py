@@ -1,5 +1,7 @@
 """Reject incomplete executed HTML and notebook/source drift."""
 from pathlib import Path
+import ast
+import hashlib
 import re
 import nbformat
 ROOT=Path(__file__).absolute().parents[1]
@@ -16,6 +18,12 @@ assert sum(c.cell_type=='code' for c in nb.cells)==len(re.findall(r'^```\{python
 assert 'urlopen(_helper_url' in nb.cells[1].source and 'ML4HL_STANDALONE' in nb.cells[1].source
 assert 'hashlib.sha256(_helper_zip)' in nb.cells[1].source
 assert max(map(len, nb.cells[1].source.splitlines())) < 200, 'Oversized notebook setup line'
+setup = ast.parse(nb.cells[1].source)
+helper_hash = next(node.value.value for node in setup.body if isinstance(node, ast.Assign)
+                   and any(isinstance(target, ast.Name) and target.id == '_helper_sha256' for target in node.targets))
+assert re.fullmatch(r'[a-f0-9]{64}', helper_hash)
+helper = ROOT / 'assets' / 'helpers' / f'ml4hl-{helper_hash}.zip'
+assert hashlib.sha256(helper.read_bytes()).hexdigest() == helper_hash, 'Missing or altered helper archive'
 print(f'PASS: {len(labels)} labeled source cells, at least 21 themed figures, logo, and generated notebook setup')
 
 # Publication requirements shared by Quarto and the generated Colab notebook.

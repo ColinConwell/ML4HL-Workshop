@@ -62,7 +62,7 @@
     "scripts/build_workshop.py": "39bdbc9c88a682ce4c60b1638523e17250aa40f8a2db36b55fcaf8647448d00c",
     "scripts/check_colab.py": "893d709fc757f9886c1a9736e2ab7eeb73771fc92070466c0e6b8b79cea9e4d9",
     "scripts/check_data_release.py": "52eb76b69af0f2141862d053a2db95fdb24cbade42d5cdcb7cff5341684b866e",
-    "scripts/check_outputs.py": "40f6d9c2f3348b35a070103e4a30e46404166bcbe8644d2c33cdedc62a23d43d",
+    "scripts/check_outputs.py": "ea96dd00ae4bd92c1224c800aa678ae82ac6daf58bb01a522e2f38fc036b13f3",
     "scripts/check_science.py": "77e49074379d71b494c8e3bc0042edb713307c44bfa955cf9eab42ea07d6afb5",
     "scripts/colab-test.env": "1d58b99008d883871bc78c2e2ff7d6ac3226387b65ad4d0aef62e43bfee617f2",
     "scripts/colab_pinned.sh": "9a80bbd6ce5e3915cc899a022fc67efbc0cf59076173e6694caa777fd65edc85",
