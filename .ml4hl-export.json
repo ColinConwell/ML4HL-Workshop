@@ -1,6 +1,7 @@
 {
   "schema": 1,
   "files": {
+    ".github/INDEX.md": "71fa803d5ccba61ba89443e2596089eac6cb9e3d94557c93b342782b5eca4b95",
     ".github/workflows/pages.yml": "4ed099000eaeb0a9568e4b8443dc7febceb9a142652a502cd24c333edb5e1429",
     ".gitignore": "f8d94e3ab50762f93fbdbd91ecf2f9ae6ef14dfbd46428111d9456d9e6d855c4",
     "AGENTS.md": "55847ab7d3f7ca6cf6e3d586e9984d83def679951f936bbe13814fdcc6fe3e77",
@@ -12,6 +13,7 @@
     "ML4HL-Tutorial.qmd": "a7a1e8a20e2cfea01da6f5b59268e71b838b4fd054408e9356f68ab7a905b490",
     "README.md": "7cb0b473fd75c6c47c28d80c9b8865e9f32fb9b0b7d9d1e7c81c541c63bcc1f4",
     "assets/README.md": "806e48cbe70b4d8d53d41b393509e743feab851d111aefc4775171c7cc213bc1",
+    "assets/helpers/ml4hl-b565a192bb299e72654675f59aaf780cc6a5c157352293833cabe0f9ee163a13.zip": "b565a192bb299e72654675f59aaf780cc6a5c157352293833cabe0f9ee163a13",
     "assets/theme-head.html": "f625f51eaae7d1e849ca539c69b69c44040de3ec9332964d8cf9e0a6719c7c40",
     "assets/visna-logo-rounded.svg": "43abf88e2502704da39f05ced8cb19b627a2c2eab4a1d4f07f6dfa36cc06bab5",
     "assets/visna-logo.jpg": "08e9bdeb3aa72607874f93e3de3711a1e117490d8ab4af5eff54b92d60a3b9f1",
@@ -23,6 +25,7 @@
     "ml4hl/assets/theme.css": "4993a8a70c3a13f8273250e4041611cc2ade4a073024c7ae9af43a74a343edf3",
     "ml4hl/assets/theme.js": "833d7851d79bdd2c4447885bc030ff0851e23b3f58468ae8855829965146bae2",
     "ml4hl/assets/theme.json": "ae606fbc2fbb3967797c9f1f6c58aae49eeec32d426153594733124054493896",
+    "ml4hl/assets/widgets.json": "cf7157b633c02d4a36b3add1694cfacc72e2877697ad99b104d3a593a527e5cf",
     "ml4hl/assets/widgets/autoencoder.js": "c202a1f96de9a6b3a06a7d23933935e8e1d450e28d85a88c0d66daf2e7e6d29f",
     "ml4hl/assets/widgets/category_manifolds.js": "5018d90aeeafc8d43b2b74b2a0729507ecb63f5b0f5add317a77982fb53c6f75",
     "ml4hl/assets/widgets/classifier_zoo.js": "ba692939056b9371ef2f1ff04fddf7353fefc02cd539cb234c82e1b2250dd48a",
@@ -49,7 +52,6 @@
     "ml4hl/assets/widgets/rsa_pipeline.js": "b46b6b2b1f252880a214589e80159135ab1f31d04e45924eeabd329574078b04",
     "ml4hl/assets/widgets/spline_relu_basis.js": "57a6103fb0b390e2fca350801974be2ea90a0edc2ef2b630d938669d8d4e2c5e",
     "ml4hl/assets/widgets/spline_scaling.js": "89aa0a2f5af583657399203a39c0bc006b1dbd4e84208f27e050dec12dc9a649",
-    "ml4hl/assets/widgets.json": "cf7157b633c02d4a36b3add1694cfacc72e2877697ad99b104d3a593a527e5cf",
     "ml4hl/data.py": "16d26c9444c9a23c0b02613c61837e2d785228fa58a0ff4d798bbbd3462e3eb6",
     "ml4hl/plotting.py": "839402dd46fd571ca1193085ef2482a8ca6cd5f4101f7fc9153df8f7e72f2245",
     "ml4hl/samples.py": "767ca7ad0c023e021267095de5ea5921a2bcb7848d2950f16d0819e014391d24",
@@ -70,7 +72,6 @@
     "scripts/notebook_bundle.py": "11eef79be517126a8f7e76fc8e9ad5340557059b58c9a5fb6d534c8f9d24743c",
     "scripts/to_colab.py": "b40b1b1c5a3b887498a353ab9955764f9089d442aad76b26a7d89d446c25bbf3",
     "scripts/validate_site.py": "92b4000eb6001750b25974cc4ab854e4e1c4ed1a90572dec7b6d1972505b2640",
-    "styles.css": "bb0c6c4dc5ff6fd2b01123074a3639ce970421e7e771f434accbb670d9eefee3",
-    "assets/helpers/ml4hl-b565a192bb299e72654675f59aaf780cc6a5c157352293833cabe0f9ee163a13.zip": "b565a192bb299e72654675f59aaf780cc6a5c157352293833cabe0f9ee163a13"
+    "styles.css": "bb0c6c4dc5ff6fd2b01123074a3639ce970421e7e771f434accbb670d9eefee3"
   }
 }
