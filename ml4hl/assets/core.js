@@ -398,15 +398,51 @@
     return el;
   });
 
-  /* Title row: "Figure N — Title" plus an interaction hint. */
+  /* Title row: "Figure N — Title" plus a collapsible multiline usage hint. */
+  var _hintSeq = 0;
   M.frame = function (root, cfg, d) {
     var fig = cfg.fig != null ? cfg.fig : d.fig;
     var title = cfg.title || d.title || '';
-    var hint = cfg.hint != null ? cfg.hint : d.hint;
-    root.appendChild(h('div', { class: 'widget-head' }, [
-      h('div', { class: 'widget-title', html: (fig != null ? 'Figure ' + M.esc(fig) + ' &mdash; ' : '') + M.esc(title) }),
-      hint ? h('div', { class: 'widget-hint', html: hint }) : null
-    ]));
+    var rawHint = cfg.hint != null ? cfg.hint : d.hint;
+    var lines = Array.isArray(rawHint)
+      ? rawHint.map(function (s) { return String(s || '').trim(); }).filter(Boolean)
+      : String(rawHint || '').split(/\s*(?:&middot;|\u00b7|\n)\s*/i).map(function (s) { return s.trim(); }).filter(Boolean);
+    lines = lines.map(function (s) {
+      return s.replace(/^[a-z]/, function (c) { return c.toUpperCase(); });
+    });
+
+    var head = h('div', { class: 'widget-head' });
+    var bar = h('div', { class: 'widget-head-bar' }, [
+      h('div', { class: 'widget-title', html: (fig != null ? 'Figure ' + M.esc(fig) + ' &mdash; ' : '') + M.esc(title) })
+    ]);
+    head.appendChild(bar);
+
+    if (lines.length) {
+      var open = cfg.show_hint !== false;
+      var hintId = 'ml4hl-hint-' + (++_hintSeq);
+      var hintEl = h('ul', { class: 'widget-hint', id: hintId }, lines.map(function (line) {
+        return h('li', { class: 'widget-hint-line', html: line });
+      }));
+      hintEl.hidden = !open;
+      var toggleBtn = h('button', {
+        type: 'button',
+        class: 'wbtn widget-hint-toggle',
+        'aria-expanded': String(open),
+        'aria-controls': hintId,
+        'aria-label': 'Show or hide usage instructions',
+        'data-role': 'hint-toggle'
+      }, [open ? 'Hide instructions' : 'Show instructions']);
+      toggleBtn.addEventListener('click', function () {
+        open = !open;
+        hintEl.hidden = !open;
+        toggleBtn.setAttribute('aria-expanded', String(open));
+        toggleBtn.textContent = open ? 'Hide instructions' : 'Show instructions';
+        M.colabResize();
+      });
+      bar.appendChild(toggleBtn);
+      head.appendChild(hintEl);
+    }
+    root.appendChild(head);
   };
 
   M.row = function (parent, cls) { return parent.appendChild(h('div', { class: 'wrow' + (cls ? ' ' + cls : '') })); };

@@ -42,22 +42,59 @@
 /* ─── Head ───────────────────────────────────────────────────── */
 .ml4hl .widget-head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 4px 12px;
+  flex-direction: column;
+  gap: 8px;
   margin: 0 0 12px;
 }
+.ml4hl .widget-head-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
 .ml4hl .widget-title {
-  font: 500 10px/1.4 var(--mono);
+  flex: 1 1 16rem;
+  min-width: 0;
+  font: 500 10px/1.45 var(--mono);
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
 }
+.ml4hl .widget-hint-toggle {
+  flex: 0 0 auto;
+  padding: 3px 9px;
+  font-size: 9.5px;
+  letter-spacing: 0.9px;
+}
 .ml4hl .widget-hint {
-  font: 10.5px/1.4 var(--mono);
+  list-style: none;
+  margin: 0;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--faint);
+  border-radius: 3px;
+  background: var(--bg);
+  font: 10.5px/1.55 var(--mono);
   color: var(--muted);
-  text-align: right;
+  text-align: left;
+}
+.ml4hl .widget-hint[hidden] { display: none !important; }
+.ml4hl .widget-hint-line {
+  position: relative;
+  margin: 0;
+  padding-left: 12px;
+}
+.ml4hl .widget-hint-line + .widget-hint-line {
+  margin-top: 2px;
+}
+.ml4hl .widget-hint-line::before {
+  content: '\00b7';
+  position: absolute;
+  left: 1px;
+  top: 0;
+  color: var(--blue);
+  font-weight: 700;
 }
 .ml4hl .mini-title {
   margin: 0 0 6px;
@@ -227,6 +264,7 @@
   font-variant-numeric: tabular-nums;
 }
 .ml4hl .wread { margin-top: 10px; min-height: 1.85em; }
+.ml4hl .wread-interp { display: block; margin-top: 2px; line-height: 1.5; }
 .ml4hl .wval { min-width: 46px; font-size: 11px; line-height: 1; white-space: nowrap; }
 .ml4hl .wval.accent-green { color: var(--green); }
 .ml4hl .wval.accent-blue { color: var(--blue); }

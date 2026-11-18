@@ -7,6 +7,79 @@
   --line:var(--ml-border); --code-bg:var(--ml-panel);
   --blue:var(--ml-blue); --orange:var(--ml-orange); --green:var(--ml-green); --red:var(--ml-red);
   --sans:'Avenir Next', Avenir, system-ui, sans-serif; --mono:ui-monospace, SFMono-Regular, Consolas, monospace;
+  /* Built-in Jupyter / IPyWidgets variables (tqdm.notebook, HF datasets, ipywidgets) */
+  --jp-border-width:1px;
+  --jp-ui-font-scale-factor:1.2;
+  --jp-ui-font-size1:12.5px;
+  --jp-ui-font-size0:calc(var(--jp-ui-font-size1)/var(--jp-ui-font-scale-factor));
+  --jp-ui-font-size2:calc(var(--jp-ui-font-size1)*var(--jp-ui-font-scale-factor));
+  --jp-ui-font-size3:calc(var(--jp-ui-font-size2)*var(--jp-ui-font-scale-factor));
+  --jp-ui-icon-font-size:14px;
+  --jp-ui-font-family:var(--sans);
+  --jp-content-font-size:12.5px;
+  --jp-content-line-height:1.5;
+  --jp-code-font-size:12.5px;
+  --jp-code-line-height:1.35;
+  --jp-code-padding:5px;
+  --jp-code-font-family:var(--mono);
+  --jp-content-font-color0:var(--ml-ink);
+  --jp-content-font-color1:var(--ml-ink);
+  --jp-content-font-color2:var(--ml-muted);
+  --jp-content-font-color3:var(--ml-faint);
+  --jp-ui-font-color0:var(--ml-ink);
+  --jp-ui-font-color1:var(--ml-ink);
+  --jp-ui-font-color2:var(--ml-muted);
+  --jp-ui-font-color3:var(--ml-faint);
+  --jp-ui-inverse-font-color0:var(--ml-surface);
+  --jp-ui-inverse-font-color1:var(--ml-surface);
+  --jp-ui-inverse-font-color2:var(--ml-panel);
+  --jp-ui-inverse-font-color3:var(--ml-border);
+  --jp-inverse-ui-font-color0:var(--ml-surface);
+  --jp-inverse-ui-font-color1:var(--ml-surface);
+  --jp-inverse-ui-font-color2:var(--ml-panel);
+  --jp-inverse-ui-font-color3:var(--ml-border);
+  --jp-layout-color0:var(--ml-bg);
+  --jp-layout-color1:var(--ml-surface);
+  --jp-layout-color2:var(--ml-panel);
+  --jp-layout-color3:var(--ml-border);
+  --jp-border-color0:var(--ml-border);
+  --jp-border-color1:var(--ml-border);
+  --jp-border-color2:var(--ml-grid);
+  --jp-border-color3:var(--ml-panel);
+  --jp-brand-color0:var(--ml-blue);
+  --jp-brand-color1:var(--ml-blue);
+  --jp-brand-color2:var(--ml-blue);
+  --jp-brand-color3:var(--ml-panel);
+  --jp-accent-color0:var(--ml-green);
+  --jp-accent-color1:var(--ml-green);
+  --jp-accent-color2:var(--ml-green);
+  --jp-accent-color3:var(--ml-panel);
+  --jp-success-color0:var(--ml-green);
+  --jp-success-color1:var(--ml-green);
+  --jp-success-color2:var(--ml-green);
+  --jp-success-color3:var(--ml-panel);
+  --jp-warn-color0:var(--ml-orange);
+  --jp-warn-color1:var(--ml-orange);
+  --jp-warn-color2:var(--ml-orange);
+  --jp-warn-color3:var(--ml-panel);
+  --jp-error-color0:var(--ml-red);
+  --jp-error-color1:var(--ml-red);
+  --jp-error-color2:var(--ml-red);
+  --jp-error-color3:var(--ml-panel);
+  --jp-info-color0:var(--ml-teal);
+  --jp-info-color1:var(--ml-teal);
+  --jp-info-color2:var(--ml-teal);
+  --jp-info-color3:var(--ml-panel);
+  --jp-widgets-color:var(--ml-ink);
+  --jp-widgets-label-color:var(--ml-ink);
+  --jp-widgets-readout-color:var(--ml-muted);
+  --jp-widgets-input-color:var(--ml-ink);
+  --jp-widgets-input-background-color:var(--ml-surface);
+  --jp-widgets-input-border-color:var(--ml-border);
+  --jp-widgets-input-focus-border-color:var(--ml-blue);
+  --jp-widgets-slider-handle-background-color:var(--ml-ink);
+  --jp-widgets-slider-handle-border-color:var(--ml-border);
+  --jp-widgets-slider-active-handle-color:var(--ml-blue);
 }
 body {font-family:var(--sans); color:var(--ml-ink); background:var(--ml-bg);}
 a {color:var(--ml-blue);}
@@ -25,7 +98,16 @@ html[data-ml4hl-theme="dark"] .ml4hl-plot img[data-mode="light"] {display:none;}
 html[data-ml4hl-theme="dark"] .ml4hl-plot img[data-mode="dark"] {display:block;}
 html[data-ml4hl-plots="original"] .ml4hl-plot img[data-mode] {display:none;}
 html[data-ml4hl-plots="original"] .ml4hl-plot img[data-mode="original"] {display:block;}
-html[data-ml4hl-theme="dark"] .table,html[data-ml4hl-theme="dark"] table {--bs-table-color:var(--ml-ink);--bs-table-bg:var(--ml-surface);color:var(--ml-ink);}
+html[data-ml4hl-theme] .table,html[data-ml4hl-theme] table {
+  --bs-table-color:var(--ml-ink);
+  --bs-table-bg:var(--ml-surface);
+  --bs-table-striped-color:var(--ml-ink);
+  --bs-table-striped-bg:var(--ml-panel);
+  --bs-table-hover-color:var(--ml-ink);
+  --bs-table-hover-bg:var(--ml-panel);
+  --bs-table-border-color:var(--ml-border);
+  color:var(--ml-ink);
+}
 .seg button.on,.tool.on {color:var(--ml-bg);}
 @media(max-width:600px){.quarto-title{padding-left:90px;padding-right:0;min-height:80px}.ml4hl-logo{width:72px;height:72px;border-radius:18px}.ml4hl-appearance{padding:12px;}}
 @media print{.ml4hl-appearance{display:none}.ml4hl-plot img[data-mode]{display:none!important}.ml4hl-plot img[data-mode="light"]{display:block!important}}
@@ -38,4 +120,138 @@ html[data-ml4hl-theme] #TOC .nav-link.active {color:var(--ml-blue);border-left-c
 html[data-ml4hl-theme] body :not(pre) > code {
   color:var(--ml-ink) !important; background-color:var(--ml-panel) !important;
   border:1px solid var(--ml-border); border-radius:4px; padding:0.08em 0.28em;
+}
+
+/* Built-in Jupyter widgets, progress bars, stdout panels, and estimator diagrams */
+html[data-ml4hl-theme] .cell-output-display:has(.jupyter-widgets),
+html[data-ml4hl-theme] .jp-OutputArea-output:has(.jupyter-widgets),
+html[data-ml4hl-theme] .output_subarea:has(.jupyter-widgets) {
+  margin:8px 0;
+  padding:8px 12px;
+  background:var(--ml-surface);
+  border:1px solid var(--ml-border);
+  border-radius:4px;
+}
+html[data-ml4hl-theme] .jupyter-widgets,
+html[data-ml4hl-theme] .lm-Widget.jupyter-widgets,
+html[data-ml4hl-theme] .p-Widget.jupyter-widgets {
+  color:var(--ml-ink) !important;
+  font-family:var(--mono);
+  font-size:12px;
+}
+html[data-ml4hl-theme] .jupyter-widgets.widget-hbox {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:4px 10px;
+}
+html[data-ml4hl-theme] .jupyter-widgets .widget-html,
+html[data-ml4hl-theme] .jupyter-widgets .widget-html-content,
+html[data-ml4hl-theme] .jupyter-widgets .widget-label,
+html[data-ml4hl-theme] .jupyter-widgets .widget-readout {
+  color:var(--ml-ink) !important;
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.5;
+}
+html[data-ml4hl-theme] .jupyter-widgets.widget-hbox > .widget-html:last-child .widget-html-content {
+  color:var(--ml-muted) !important;
+}
+html[data-ml4hl-theme] .widget-hprogress {
+  display:inline-flex !important;
+  align-items:center;
+  flex:1 1 160px;
+  max-width:300px;
+  height:20px !important;
+  margin:0 !important;
+}
+html[data-ml4hl-theme] .widget-hprogress .progress,
+html[data-ml4hl-theme] .widget-vprogress .progress {
+  background-color:var(--ml-panel) !important;
+  border:1px solid var(--ml-border) !important;
+  border-radius:3px !important;
+  box-shadow:none !important;
+  overflow:hidden;
+}
+html[data-ml4hl-theme] .widget-hprogress .progress {
+  height:10px !important;
+  margin:0 !important;
+  align-self:center;
+}
+html[data-ml4hl-theme] .widget-hprogress .progress-bar,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar {
+  background-color:var(--ml-blue) !important;
+  height:100% !important;
+}
+html[data-ml4hl-theme] .widget-hprogress .progress-bar-success,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar-success {
+  background-color:var(--ml-green) !important;
+}
+html[data-ml4hl-theme] .widget-hprogress .progress-bar-info,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar-info {
+  background-color:var(--ml-teal) !important;
+}
+html[data-ml4hl-theme] .widget-hprogress .progress-bar-warning,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar-warning {
+  background-color:var(--ml-orange) !important;
+}
+html[data-ml4hl-theme] .widget-hprogress .progress-bar-danger,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar-danger {
+  background-color:var(--ml-red) !important;
+}
+html[data-ml4hl-theme] .jupyter-button,
+html[data-ml4hl-theme] .jupyter-widgets select,
+html[data-ml4hl-theme] .jupyter-widgets input[type="text"],
+html[data-ml4hl-theme] .jupyter-widgets input[type="number"],
+html[data-ml4hl-theme] .jupyter-widgets textarea {
+  background-color:var(--ml-surface) !important;
+  color:var(--ml-ink) !important;
+  border:1px solid var(--ml-border) !important;
+  border-radius:3px;
+}
+html[data-ml4hl-theme] .cell-output progress {
+  accent-color:var(--ml-green);
+  background-color:var(--ml-panel);
+  border:1px solid var(--ml-border);
+  border-radius:3px;
+  height:10px;
+}
+html[data-ml4hl-theme] .cell-output progress::-webkit-progress-bar {
+  background-color:var(--ml-panel);
+  border-radius:3px;
+}
+html[data-ml4hl-theme] .cell-output progress::-webkit-progress-value {
+  background-color:var(--ml-green);
+  border-radius:2px;
+}
+html[data-ml4hl-theme] .cell-output progress::-moz-progress-bar {
+  background-color:var(--ml-green);
+  border-radius:2px;
+}
+html[data-ml4hl-theme] .cell-output pre {
+  background:var(--ml-surface);
+  color:var(--ml-ink);
+  border:1px solid var(--ml-border);
+  border-radius:4px;
+  padding:0.65rem 0.85rem;
+}
+html[data-ml4hl-theme] .cell-output pre > code {
+  background:transparent !important;
+  color:inherit !important;
+  border:0 !important;
+  padding:0 !important;
+}
+html[data-ml4hl-theme] .sk-top-container {
+  --sklearn-color-text-on-default-background:var(--ml-ink) !important;
+  --sklearn-color-background:var(--ml-surface) !important;
+  --sklearn-color-border-box:var(--ml-border) !important;
+  --sklearn-color-unfitted-level-0:var(--ml-panel) !important;
+  --sklearn-color-unfitted-level-1:var(--ml-surface) !important;
+  --sklearn-color-fitted-level-0:var(--ml-panel) !important;
+  --sklearn-color-fitted-level-1:var(--ml-surface) !important;
+  background:var(--ml-surface) !important;
+  color:var(--ml-ink) !important;
+  border:1px solid var(--ml-border);
+  border-radius:4px;
+  padding:8px;
 }
