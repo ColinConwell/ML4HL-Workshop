@@ -18,6 +18,8 @@ jobs:
       JOBLIB_MULTIPROCESSING: '0'
       OPENBLAS_NUM_THREADS: '2'
       OMP_NUM_THREADS: '2'
+      HF_HUB_DISABLE_PROGRESS_BARS: '1'
+      TQDM_DISABLE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,6 +41,7 @@ jobs:
       - name: Generate and Validate ML4HL
         working-directory: .
         run: |
+          python scripts/check_outputs.py
           python scripts/build_theme.py
           python scripts/to_colab.py --asset-ref "${{ github.sha }}"
           python scripts/check_data_release.py
@@ -63,6 +66,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Verify Committed Helper Archive Matches Source
+        run: |
+          python - <<'PYTHON'
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'scripts')
+          from notebook_bundle import helper_archive
+          checksum, _ = helper_archive(Path('.'))
+          archive = Path(f'assets/helpers/ml4hl-{checksum}.zip')
+          assert archive.is_file(), f'Missing committed helper archive {archive}; run scripts/to_colab.py before pushing'
+          PYTHON
       - name: Prepare Ephemeral Runner Disk
         if: ${{ env.ACT != 'true' }}
         run: |
@@ -96,7 +110,11 @@ jobs:
         working-directory: .
         run: |
           python scripts/to_colab.py --asset-ref "${{ github.sha }}"
-          python scripts/check_colab.py
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            python scripts/check_colab.py --stage-local-helper
+          else
+            python scripts/check_colab.py
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

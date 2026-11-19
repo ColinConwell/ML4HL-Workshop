@@ -43,11 +43,24 @@ def _verified_artifact(path: Path, name: str) -> Path:
     return path
 
 
+def _quiet_in_quarto() -> None:
+    """Suppress transient Hub/xet download widgets when rendering static Quarto HTML."""
+    if any(k.startswith("QUARTO_") for k in os.environ) or os.environ.get("HF_HUB_DISABLE_PROGRESS_BARS") == "1":
+        os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+        try:
+            from huggingface_hub.utils import disable_progress_bars
+
+            disable_progress_bars()
+        except Exception:
+            pass
+
+
 def artifact(name: str, artifacts=None) -> Path:
     """Path to an artifact file: local copy if present, else downloaded from the Hub."""
     for d in _local_dirs(artifacts):
         if (d / name).exists():
             return _verified_artifact(d / name, name)
+    _quiet_in_quarto()
     from huggingface_hub import hf_hub_download
 
     return _verified_artifact(Path(hf_hub_download(HF_REPO, f"artifacts/{name}", repo_type="dataset", revision=HF_REVISION)), name)
@@ -75,6 +88,7 @@ def _try_artifact(name: str, artifacts=None) -> Path | None:
     for d in _local_dirs(artifacts):
         if (d / name).exists():
             return _verified_artifact(d / name, name)
+    _quiet_in_quarto()
     from huggingface_hub import hf_hub_download
     from huggingface_hub.errors import EntryNotFoundError
     try:

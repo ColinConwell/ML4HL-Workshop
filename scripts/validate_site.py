@@ -12,7 +12,7 @@ class Parser(HTMLParser):
 def validate(root,prefix):
  errors=[];count=0
  for p in root.rglob('*'):
-  if p.is_file() and (p.name in ('PLAN.md','ML4HL-Widgets.html','.env.local','mcp.json') or 'ML4HL-Motif' in p.name):errors.append(f'Excluded file: {p}')
+  if p.is_file() and (p.name in ('PLAN.md','ML4HL-Widgets.html','DL4HL-Widgets.html','.env.local','mcp.json') or 'ML4HL-Motif' in p.name):errors.append(f'Excluded file: {p}')
  for p in root.rglob('*.html'):
   parser=Parser();parser.feed(p.read_text());count+=1
   for link in parser.links:

@@ -157,7 +157,8 @@ html[data-ml4hl-theme] .jupyter-widgets .widget-readout {
 html[data-ml4hl-theme] .jupyter-widgets.widget-hbox > .widget-html:last-child .widget-html-content {
   color:var(--ml-muted) !important;
 }
-html[data-ml4hl-theme] .widget-hprogress {
+html[data-ml4hl-theme] .widget-hprogress,
+html[data-ml4hl-theme] .jupyter-widget-hprogress {
   display:inline-flex !important;
   align-items:center;
   flex:1 1 160px;
@@ -166,37 +167,50 @@ html[data-ml4hl-theme] .widget-hprogress {
   margin:0 !important;
 }
 html[data-ml4hl-theme] .widget-hprogress .progress,
-html[data-ml4hl-theme] .widget-vprogress .progress {
+html[data-ml4hl-theme] .jupyter-widget-hprogress .progress,
+html[data-ml4hl-theme] .widget-vprogress .progress,
+html[data-ml4hl-theme] .jupyter-widget-vprogress .progress {
   background-color:var(--ml-panel) !important;
   border:1px solid var(--ml-border) !important;
   border-radius:3px !important;
   box-shadow:none !important;
   overflow:hidden;
 }
-html[data-ml4hl-theme] .widget-hprogress .progress {
+html[data-ml4hl-theme] .widget-hprogress .progress,
+html[data-ml4hl-theme] .jupyter-widget-hprogress .progress {
   height:10px !important;
   margin:0 !important;
   align-self:center;
 }
 html[data-ml4hl-theme] .widget-hprogress .progress-bar,
-html[data-ml4hl-theme] .widget-vprogress .progress-bar {
+html[data-ml4hl-theme] .jupyter-widget-hprogress .progress-bar,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar,
+html[data-ml4hl-theme] .jupyter-widget-vprogress .progress-bar {
   background-color:var(--ml-blue) !important;
   height:100% !important;
 }
 html[data-ml4hl-theme] .widget-hprogress .progress-bar-success,
-html[data-ml4hl-theme] .widget-vprogress .progress-bar-success {
+html[data-ml4hl-theme] .jupyter-widget-hprogress .progress-bar-success,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar-success,
+html[data-ml4hl-theme] .jupyter-widget-vprogress .progress-bar-success {
   background-color:var(--ml-green) !important;
 }
 html[data-ml4hl-theme] .widget-hprogress .progress-bar-info,
-html[data-ml4hl-theme] .widget-vprogress .progress-bar-info {
+html[data-ml4hl-theme] .jupyter-widget-hprogress .progress-bar-info,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar-info,
+html[data-ml4hl-theme] .jupyter-widget-vprogress .progress-bar-info {
   background-color:var(--ml-teal) !important;
 }
 html[data-ml4hl-theme] .widget-hprogress .progress-bar-warning,
-html[data-ml4hl-theme] .widget-vprogress .progress-bar-warning {
+html[data-ml4hl-theme] .jupyter-widget-hprogress .progress-bar-warning,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar-warning,
+html[data-ml4hl-theme] .jupyter-widget-vprogress .progress-bar-warning {
   background-color:var(--ml-orange) !important;
 }
 html[data-ml4hl-theme] .widget-hprogress .progress-bar-danger,
-html[data-ml4hl-theme] .widget-vprogress .progress-bar-danger {
+html[data-ml4hl-theme] .jupyter-widget-hprogress .progress-bar-danger,
+html[data-ml4hl-theme] .widget-vprogress .progress-bar-danger,
+html[data-ml4hl-theme] .jupyter-widget-vprogress .progress-bar-danger {
   background-color:var(--ml-red) !important;
 }
 html[data-ml4hl-theme] .jupyter-button,
